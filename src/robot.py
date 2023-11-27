@@ -1,6 +1,8 @@
 # Create a class for the robot
 # Class contains parameters such as speed, state...
 # It also contains the states like position, angle...
+__init__ = ['robot']
+
 
 class robot:
     def __init__(self):
@@ -12,25 +14,41 @@ class robot:
         self.speed = [0,0]               #speed of right and left wheels
         self.state = 'STOP'              # state of the robot
 
-    def go_forward(self):
+    def go_forward(self,speed):
         self.state = 'FORWARD'  # state of the robot
-        self.speed = [100,100]  # both wheels go forward
+        self.speed = [speed,speed]  # speed of right and left wheels
+        v = {"motor.left.target": [50],
+             "motor.right.target": [50],}
+        return v
+        #node.send_set_variables(v)
 
-        return  "motor.left.target": [100],
-                "motor.right.target": [100],
-                await node.set_variables(v)
         
 
-    def turn(self):
+    def turn(self,speed):
         self.state = 'TURN'     # state of the robot
         if(self.teta < 0):
-            self.speed = [-100,100] # turn left
+            self.speed = [-speed,speed] # turn left
+
         else:
-            self.speed = [100,-100] # turn right
+            self.speed = [speed,-speed] # turn right
+            v = {"motor.left.target": [self.speed[0]],
+                 "motor.right.target": [self.speed[1]],}
+        #node.send_set_variables(v)
 
     def stop(self):
         self.state = 'STOP'     # state of the robot
-        self.speed = [0,0]      # both wheels stop
-        return  "motor.left.target": [0],
-                "motor.right.target": [0],
-                await node.set_variables(v)
+        self.speed = [0,0]      # speed of right and left wheels 
+        v = {"motor.left.target": [0],
+             "motor.right.target": [0],}
+        return 'STOPPED'
+        #node.send_set_variables(v)
+        
+    def print_status(self):
+        print('Robot position: ',self.pos)
+        print('Robot angle: ',self.phi)
+        print('Robot speed: ',self.speed)
+        print('Robot state: ',self.state)
+        print('Robot trajectory angle: ',self.teta)
+        print('Robot top marker position: ',self.pos_marker_top)
+        print('Robot bottom marker position: ',self.pos_marker_bottom)
+        print('---------------------------')
