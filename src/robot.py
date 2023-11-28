@@ -4,7 +4,8 @@
 import numpy as np
 
 __init__ = ['robot']
-
+CRUISING_SPEED = 200
+TURNING_SPEED = 50
 class robot:
     def __init__(self):
         
@@ -21,34 +22,36 @@ class robot:
 
     def go_forward(self,speed):
         self.state = 'FORWARD'  # state of the robot
-        self.speed = [speed,speed]  # speed of right and left wheels
-        v = {"motor.left.target": [50],
-             "motor.right.target": [50],}
+        v = {"motor.left.target": [CRUISING_SPEED],
+             "motor.right.target": [CRUISING_SPEED],}
         return v        
 
     def turn(self,speed):
         self.state = 'TURN'     # state of the robot
         if(self.teta < 0):
-            self.speed = [-speed,speed] # turn left
+            v = {"motor.left.target": [-TURNING_SPEED],
+                 "motor.right.target": [TURNING_SPEED],}
 
         else:
-            self.speed = [speed,-speed] # turn right
-            v = {"motor.left.target": [self.speed[0]],
-                 "motor.right.target": [self.speed[1]],}
+            v = {"motor.left.target": [TURNING_SPEED],
+                 "motor.right.target": [-TURNING_SPEED],}
         return v
 
     def stop(self):
-        self.state = 'STOP'     # state of the robot
-        self.speed = [0,0]      # speed of right and left wheels 
+        self.state = 'STOP'             # state of the robot
         v = {"motor.left.target": [0],
              "motor.right.target": [0],}
         return v
     
     def update(self, trajectory_angle):
+        self.speed = self.pos
         self.pos = (np.add(self.pos_marker_top,self.pos_marker_bottom))/2  
+        self.phi_dot = self.phi
         self.phi = np.arctan2(self.pos_marker_top[1] - self.pos_marker_bottom[1],
                                self.pos_marker_top[0] - self.pos_marker_bottom[0])
-        self.teta = self.phi - np.deg2rad(trajectory_angle)                         
+        self.teta = self.phi - np.deg2rad(trajectory_angle)   
+        self.phi_dot = self.phi - self.phi_dot
+        self.speed = self.pos - self.speed                     
         
     def print_status(self):
         print('Robot position: ',self.pos)
