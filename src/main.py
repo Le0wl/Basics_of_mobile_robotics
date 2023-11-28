@@ -6,3 +6,6 @@ import sys
 sys.path.append('.\src')
 
 from robot import *
+
+robot = robot()
+
