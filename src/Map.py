@@ -1,9 +1,20 @@
 import cv2
 import numpy as np
 import time
+import matplotlib.pyplot as plt
+from robot import robot
+
+__init__ = ['ObjectTracker']
 
 class ObjectTracker:
     def __init__(self):
+
+
+        self.frame_height = 0
+        self.frame_width = 0
+        self.start_time = 0
+        self.video = None
+
         # Initialize variables for averaging
         self.num_frames_average_black = 30   # Adjust this value
         self.max_tracked_objects_black = 8
@@ -25,6 +36,7 @@ class ObjectTracker:
         self.avg_cx_red = [0] * self.max_tracked_objects_red
         self.avg_cy_red = [0] * self.max_tracked_objects_red
         self.num_tracked_objects_red = 0
+        self.pos_red = [0] * self.max_tracked_objects_red
 
         self.num_frames_average_green = 100   # Adjust this value
         self.max_tracked_objects_green = 4    # Limit green tracking to 4 objects
@@ -97,7 +109,7 @@ class ObjectTracker:
             for i in range(self.num_tracked_objects):
                 self.avg_cx_black[i] = round(self.avg_cx_black[i] / self.num_frames_average_black, 2)
                 self.avg_cy_black[i] = round(self.avg_cy_black[i] / self.num_frames_average_black, 2)
-                print("Obstacle_Center {}: ({}, {})".format(i+1, self.avg_cx_black[i], self.avg_cy_black[i]))
+                #print("Obstacle_Center {}: ({}, {})".format(i+1, self.avg_cx_black[i], self.avg_cy_black[i]))
 
             # Reset the accumulated values and counter for the next set of frames
             self.blk_avg_count = 0
@@ -168,7 +180,7 @@ class ObjectTracker:
             for i in range(self.num_tracked_objects_blue):
                 self.avg_cx_blue[i] = round(self.avg_cx_blue[i] / self.num_frames_average_blue, 2)
                 self.avg_cy_blue[i] = round(self.avg_cy_blue[i] / self.num_frames_average_blue, 2)
-                print("Goal_Center {}: ({}, {})".format(i+1, self.avg_cx_blue[i], self.avg_cy_blue[i]))
+                #print("Goal_Center {}: ({}, {})".format(i+1, self.avg_cx_blue[i], self.avg_cy_blue[i]))
 
             # Reset the accumulated values and counter for the next set of frames
             self.blue_avg_count = 0
@@ -243,13 +255,15 @@ class ObjectTracker:
             for i in range(self.num_tracked_objects_red):
                 self.avg_cx_red[i] = round(self.avg_cx_red[i] / self.num_frames_average_red, 2)
                 self.avg_cy_red[i] = round(self.avg_cy_red[i] / self.num_frames_average_red, 2)
-                print("Thymio {}: ({}, {})".format(i+1, self.avg_cx_red[i], self.avg_cy_red[i]))
+                #print("Thymio {}: ({}, {})".format(i+1, self.avg_cx_red[i], self.avg_cy_red[i]))
 
             # Reset the accumulated values and counter for the next set of frames
             self.red_avg_count = 0
             self.avg_cx_red = [0] * self.max_tracked_objects_red
             self.avg_cy_red = [0] * self.max_tracked_objects_red
-                
+            
+            self.pos_red = centroid_red
+
             return centroid_red    
 
 
@@ -329,19 +343,19 @@ class ObjectTracker:
         self.green_avg_count += 1
 
         if self.green_avg_count == self.num_frames_average_green:
-            for i in range(self.num_tracked_objects_green):
-                print("Green Object {}: ({}, {})".format(i+1, self.avg_cx_green[i], self.avg_cy_green[i]))
+            #for i in range(self.num_tracked_objects_green):
+                #print("Green Object {}: ({}, {})".format(i+1, self.avg_cx_green[i], self.avg_cy_green[i]))
 
             # Assign and print coordinates based on pixel size
             frame_width = frame.shape[1]
             frame_height = frame.shape[0]
             coordinates = self.assign_coordinates(frame_width, frame_height)
-            for coord in coordinates:
+            #for coord in coordinates:
                 # Assuming coord is a tuple of length 3
-                if len(coord) >= 3:
-                    print("Coordinate {}: {}".format(coord[0], (coord[1], coord[2])))
-                else:
-                    print("Invalid coordinate format: {}".format(coord))
+                #if len(coord) >= 3:
+                    #print("Coordinate {}: {}".format(coord[0], (coord[1], coord[2])))
+                #else:
+                    #print("Invalid coordinate format: {}".format(coord))
 
             # Reset the accumulated values and counter for the next set of frames
             self.green_avg_count = 0
@@ -364,20 +378,30 @@ class ObjectTracker:
         return average_brightness < darkness_threshold
 
     def main(self):  # Get the video file and read it
-        video = cv2.VideoCapture(0)
-        ret, frame = video.read()
+        self.video = cv2.VideoCapture(1)
+        ret, frame = self.video.read()
 
-        frame_height, frame_width = frame.shape[:2]
+        self.frame_height, self.frame_width = frame.shape[:2]
         # Resize the video for a more convenient view
-        frame = cv2.resize(frame, [frame_width // 2, frame_height // 2])
-        
+        frame = cv2.resize(frame, [self.frame_width // 2, self.frame_height // 2])
+        # a 2x2 array to store the position of the red markers
+        #red_pos = np.array([[0,0],[0,0]])
+        self.start_time = time.time()
+        #while True:
+           
+
+        #video.release()
+        #cv2.destroyAllWindows()
+
+
+    def camera_feed(self):
         while True:
             # Record the start time for calculating processing time
             start_time = time.time()
 
             # Read a frame from the webcam
-            ret, frame = video.read()
-            frame = cv2.resize(frame, [frame_width // 2, frame_height // 2])
+            ret, frame = self.video.read()
+            frame = cv2.resize(frame, [self.frame_width // 2, self.frame_height // 2])
 
             if not ret or frame is None:
                 print("Failed to capture frame")
@@ -402,9 +426,10 @@ class ObjectTracker:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-        video.release()
+        self.video.release()
         cv2.destroyAllWindows()
-
+"""
 if __name__ == "__main__":
     tracker = ObjectTracker()
     tracker.main()
+"""
