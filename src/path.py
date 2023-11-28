@@ -42,18 +42,13 @@ class Map:
 
 
 
-def main():
-
-    obstacles = [((5,5),(10,7)),((36,5),(40,20))]
+def path(robot, goal, obstacles):
+    #robot = (0, 0)
+    #goal = (17, 46)
+    #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
     maze = Map(obstacles)
-    print(12)
-    robot = (0, 0)
-    end = (17, 46)
 
-    path = a.astar(maze.get_map(), robot, end)
+    path = a.astar(maze.get_map(), robot, goal)
     maze.plot_map(path)
-    print(13)
-    return()
+    return(path)
 
-if __name__ == '__main__':
-    main()
