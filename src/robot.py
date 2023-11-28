@@ -21,29 +21,31 @@ class robot:
         self.teta = 0                                                   # trajectory angle of the robot
         self.speed = np.array([0,0])                                    #speed of right and left wheels
         self.state = 'STOP'                                             # state of the robot
+        self.v = {"motor.left.target": [0],
+                  "motor.right.target": [0],}
 
     def go_forward(self,speed):
         self.state = 'FORWARD'  # state of the robot
-        v = {"motor.left.target": [CRUISING_SPEED],
+        self.v = {"motor.left.target": [CRUISING_SPEED],
              "motor.right.target": [CRUISING_SPEED],}
-        return v        
+               
 
     def turn(self,speed,angle):
         self.state = 'TURN'     # state of the robot
         if(angle < 0):
-            v = {"motor.left.target": [-TURNING_SPEED],
+            self.v = {"motor.left.target": [-TURNING_SPEED],
                  "motor.right.target": [TURNING_SPEED],}
 
         else:
-            v = {"motor.left.target": [TURNING_SPEED],
+            self.v = {"motor.left.target": [TURNING_SPEED],
                  "motor.right.target": [-TURNING_SPEED],}
-        return v
+         
 
     def stop(self):
         self.state = 'STOP'             # state of the robot
-        v = {"motor.left.target": [0],
+        self.v = {"motor.left.target": [0],
              "motor.right.target": [0],}
-        return v
+
     
     def update(self, marker_position):
         self.pos = (marker_position[:,0] + marker_position[:,1]) / 2       
@@ -64,8 +66,10 @@ class robot:
     def run_robot(self,marker_position, tranjectory):
         while True:
             next_goal = tranjectory[:,0]
+            #self.phi = np.arctan2(marker_position[1,1] - marker_position[1,0],
+                                #marker_position[0,1] - marker_position[0,0])
             self.teta = np.arctan2(next_goal[1] - self.pos[1],next_goal[0] - self.pos[0])
-            
+            """
             while np.linalg.norm(next_goal - self.pos) > 0.1:
                 self.update(marker_position)
                 
@@ -89,5 +93,9 @@ class robot:
                     print('Goal reached')
                     self.state = 'FINISH'
                     break
+                    """
+            time.sleep(0.1)
+    
+
                     
 

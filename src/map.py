@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from robot import robot
+from robot import *
 
 __init__ = ['ObjectTracker']
 
@@ -36,7 +36,7 @@ class ObjectTracker:
         self.avg_cx_red = [0] * self.max_tracked_objects_red
         self.avg_cy_red = [0] * self.max_tracked_objects_red
         self.num_tracked_objects_red = 0
-        self.pos_red = [0] * self.max_tracked_objects_red
+        self.pos_red = np.array([[0,0],[0,0]])
 
         self.num_frames_average_green = 100   # Adjust this value
         self.max_tracked_objects_green = 4    # Limit green tracking to 4 objects
@@ -218,7 +218,7 @@ class ObjectTracker:
         # Update the number of tracked objects
         self.num_tracked_objects_red = min(len(sorted_contours_red), self.max_tracked_objects_red)
 
-        centroid_red = []
+        centroid_red = np.array([[0,0],[0,0]])
         # Calculate the average centroid value
         for i, contour_red in enumerate(sorted_contours_red):
 
@@ -234,7 +234,9 @@ class ObjectTracker:
                 self.avg_cy_red[i] += cy_red
 
             #append centroid position to the list
-            centroid_red.append((cx_red, cy_red))
+            #centroid_red.append((cx_red, cy_red))
+            centroid_red[0,:] = cx_red
+            centroid_red[1,:] = cy_red
 
             # Draw a dot at the centroid
             cv2.circle(frame, (cx_red, cy_red), 2, (0, 0, 255), -1)
@@ -378,7 +380,7 @@ class ObjectTracker:
         return average_brightness < darkness_threshold
 
     def start(self):  # Get the video file and read it
-        self.video = cv2.VideoCapture(1)
+        self.video = cv2.VideoCapture(0)
         ret, frame = self.video.read()
 
         self.frame_height, self.frame_width = frame.shape[:2]
