@@ -377,7 +377,7 @@ class ObjectTracker:
         # Check if the average brightness is below the darkness threshold
         return average_brightness < darkness_threshold
 
-    def main(self):  # Get the video file and read it
+    def start(self):  # Get the video file and read it
         self.video = cv2.VideoCapture(1)
         ret, frame = self.video.read()
 
@@ -387,11 +387,7 @@ class ObjectTracker:
         # a 2x2 array to store the position of the red markers
         #red_pos = np.array([[0,0],[0,0]])
         self.start_time = time.time()
-        #while True:
-           
-
-        #video.release()
-        #cv2.destroyAllWindows()
+    
 
 
     def camera_feed(self):

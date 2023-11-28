@@ -2,6 +2,8 @@
 # Class contains parameters such as speed, state...
 # It also contains the states like position, angle...
 import numpy as np
+import map
+import time
 
 __init__ = ['robot']
 CRUISING_SPEED = 200
@@ -26,9 +28,9 @@ class robot:
              "motor.right.target": [CRUISING_SPEED],}
         return v        
 
-    def turn(self,speed):
+    def turn(self,speed,angle):
         self.state = 'TURN'     # state of the robot
-        if(self.teta < 0):
+        if(angle < 0):
             v = {"motor.left.target": [-TURNING_SPEED],
                  "motor.right.target": [TURNING_SPEED],}
 
@@ -43,15 +45,10 @@ class robot:
              "motor.right.target": [0],}
         return v
     
-    def update(self, trajectory_angle):
-        self.speed = self.pos
-        self.pos = (np.add(self.pos_marker_top,self.pos_marker_bottom))/2  
-        self.phi_dot = self.phi
-        self.phi = np.arctan2(self.pos_marker_top[1] - self.pos_marker_bottom[1],
-                               self.pos_marker_top[0] - self.pos_marker_bottom[0])
-        self.teta = self.phi - np.deg2rad(trajectory_angle)   
-        self.phi_dot = self.phi - self.phi_dot
-        self.speed = self.pos - self.speed                     
+    def update(self, marker_position):
+        self.pos = (marker_position[:,0] + marker_position[:,1]) / 2       
+        self.phi = np.arctan2(marker_position[1,1] - marker_position[1,0],
+                               marker_position[0,1] - marker_position[0,0])          
         
     def print_status(self):
         print('Robot position: ',self.pos)
@@ -63,3 +60,34 @@ class robot:
         print('Robot top marker position: ',self.pos_marker_top)
         print('Robot bottom marker position: ',self.pos_marker_bottom)
         print('---------------------------')
+
+    def run_robot(self,marker_position, tranjectory):
+        while True:
+            next_goal = tranjectory[:,0]
+            self.teta = np.arctan2(next_goal[1] - self.pos[1],next_goal[0] - self.pos[0])
+            
+            while np.linalg.norm(next_goal - self.pos) > 0.1:
+                self.update(marker_position)
+                
+                if np.abs(self.phi - self.teta) > 0.1:
+                    v = self.turn(TURNING_SPEED,self.phi - self.teta)
+                    self.state = 'TURN'
+                    print('Turning')
+                else:
+                    v = self.go_forward(CRUISING_SPEED)
+                    self.state = 'FORWARD'
+                    print('Going forward')
+
+                if np.linalg.norm(next_goal - self.pos) < 0.1:
+                    #go to next trajectory point
+                    tranjectory = np.delete(tranjectory,0,1)
+                    print('Next goal')
+                    self.state = 'STOP'
+                    break
+                if tranjectory.size == 0:
+                    self.stop()
+                    print('Goal reached')
+                    self.state = 'FINISH'
+                    break
+                    
+

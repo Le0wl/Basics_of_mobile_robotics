@@ -15,12 +15,16 @@ robot = robot()
 
 map = ObjectTracker()
 
-map.main()
+map.start()
+trajectory = np.array([[0,0],[0,0]])
 
 #camera_th = threading.Thread(target=lambda: asyncio.run(map.camera_feed()))
 #map.camera_feed()
+
 camera_th = threading.Thread(target=map.camera_feed)
+robot_th = threading.Thread(target=robot.run_robot, args=(map.pos_red,trajectory))
 camera_th.start()
+robot_th.start()
 
 while True:
     print('Robot position: ',map.pos_red)
