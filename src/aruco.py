@@ -32,21 +32,33 @@ class ArucoMarker:
             rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners[idx], self.marker_size, cameraMatrix, distCoeffs)
             
             # Calculate position and angle
-            x_pos = tvecs[0][0][0] / frame.shape[1]
-            y_pos = tvecs[0][0][1] / frame.shape[0]
+            #x_pos = tvecs[0][0][0] / frame.shape[1]
+            #y_pos = tvecs[0][0][1] / frame.shape[0]
+            #give position of marker from 0 to 1 in camera frame with origin in bottom left
+            x_pos = tvecs[0][0][0] / frame.shape[1] + 0.5 
+            y_pos = tvecs[0][0][1] / frame.shape[0] + 0.5
             self.pos = np.array([x_pos, y_pos])
 
             #angle = np.arctan2(rvecs[0][0][0], rvecs[0][0][1])
             # give angle of x direction of marker in camera frame
             #angle = np.arctan2(tvecs[0][0][0], tvecs[0][0][1])
-            angle = rvecs[0][0][0]
-            self.angle = np.degrees(angle)
+            #angle = rvecs[0][0][0]
+            #self.angle = np.degrees(angle)
 
             # Draw axis manually (visualization)
             axis_length = self.marker_size / 2
             points = np.float32([[0, 0, 0], [axis_length, 0, 0], [0, axis_length, 0], [0, 0, -axis_length]]).reshape(-1, 3, 1)
             axis_points, _ = cv2.projectPoints(points, rvecs[0], tvecs[0], cameraMatrix, distCoeffs)
             axis_points = axis_points.astype(int)
+
+            angle = np.arctan2(axis_points[0].ravel()[0] - axis_points[1].ravel()[0], axis_points[0].ravel()[1] - axis_points[1].ravel()[1])
+            angle = np.degrees(angle) + 90
+            # angle goes from 0 to 270 ang 0 to -90
+            if(angle > 180):
+                angle = angle - 360
+            self.angle = angle
+            
+
 
             if(self.marker_id == 1):
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 0, 255), 5)
@@ -56,6 +68,10 @@ class ArucoMarker:
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 0, 100), 5)
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[2].ravel()), (0, 100, 0), 5)
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[3].ravel()), (100, 0, 0), 5)
+            if(self.marker_id == 4):
+                cv2.putText(frame,"origin",(axis_points[1][0][0] ,axis_points[1][0][1]),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2,cv2.LINE_AA)
+
+
             
 
         return frame
