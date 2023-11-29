@@ -64,6 +64,10 @@ class robot:
         print('---------------------------')
 
     def run_robot(self,marker_position, tranjectory):
+        """
+        This function is used to control the robot. It is callaed in a thread and runs at 10HZ.
+        """
+
         while True:
             next_goal = tranjectory[:,0]
             #self.phi = np.arctan2(marker_position[1,1] - marker_position[1,0],
