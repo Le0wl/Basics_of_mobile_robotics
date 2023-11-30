@@ -62,7 +62,9 @@ class robot:
         while True:
             next_goal = self.trajectory
 
-            self.teta = np.rad2deg(np.arctan2(next_goal[1] - self.pos[1],next_goal[0] - self.pos[0]))
+            #self.teta = np.rad2deg(np.arctan2(next_goal[1] - self.pos[1],next_goal[0] - self.pos[0]))
+            self.teta = 90
+            #print("GOAL: ",next_goal,"POS: ",self.pos)
             #print("INNNNNNNNNNN")
             #self.pos = marker_position    
             #self.phi = marker_angle 

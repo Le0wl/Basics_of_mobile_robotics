@@ -72,7 +72,7 @@ def update_main():
     #distance_horizontal = np.linalg.norm(map_base.bottom_left - map_base.bottom_right)
     distance_vertical = np.linalg.norm(map_base.bottom_left - map_base.top_left)
     #distance_horizontal = map_base.bottom_right[0] - map_base.bottom_left[0] - markers[3].marker_pxl_size/2 - markers[4].marker_pxl_size/2
-    distance_horizontal = np.linalg.norm(map_base.bottom_left - map_base.bottom_right)
+    distance_horizontal = np.linalg.norm(map_base.top_left - map_base.bottom_right)
 
     map_base.map = np.zeros((MAP_UNITS,MAP_UNITS,2))
     # get size of marker
@@ -84,10 +84,10 @@ def update_main():
     """
 
     #We need to generate the coordinates for all the units in the map our image is a trapezoid so we need to transform it to a rectangle
-    if np.linalg.norm(map_base.top_right - map_base.top_left) > 0 and np.linalg.norm(map_base.bottom_right - map_base.bottom_left) > 0:
-        ratio = np.linalg.norm(map_base.bottom_right - map_base.bottom_left) / np.linalg.norm(map_base.top_right - map_base.top_left)*5
-    else:
-        ratio = 1
+    #if np.linalg.norm(map_base.top_right - map_base.top_left) > 0 and np.linalg.norm(map_base.bottom_right - map_base.bottom_left) > 0:
+        #ratio = np.linalg.norm(map_base.bottom_right - map_base.bottom_left) / np.linalg.norm(map_base.top_right - map_base.top_left)*3
+    #else:
+    ratio = 1
     
     angle_map = markers[1].angle
     #print("ANGLE: ",angle_map)
@@ -98,7 +98,7 @@ def update_main():
             #map_base.map[i,j] = map_base.bottom_left + np.array([j*ratio,0]) + np.array([(2*i+1)*(distance_horizontal - j*2*ratio)/(2*MAP_UNITS) , -(2*j+1)*distance_vertical/(2*MAP_UNITS) ])
             x_pos = j*ratio + (2*i+1)*(distance_horizontal - j*2*ratio)/(2*MAP_UNITS)
             y_pos = -(2*j+1)*distance_vertical/(2*MAP_UNITS)
-            map_base.map[i,j] = map_base.bottom_left + np.array([x_pos,y_pos])
+            map_base.map[i,j] = map_base.top_left + np.array([x_pos,y_pos])
             #print("MAP: ",map_base.map[i,j])
             #- np.array([i*ratio,0])
     aruco.set_map(map_base.map)
@@ -107,7 +107,7 @@ def update_main():
     #print("ANGLE  " ,np.rad2deg(np.arctan2(map_base.map[2,2][1] - map_base.bottom_left[1],map_base.map[2,2][0] - map_base.bottom_left[0])), "ROBOT: ",robot.pos,"GOAL: ",robot.trajectory)
     #print("ORIGIN: ",map_base.origin, "GOAL: ",robot.trajectory)
     #print("ROBOT: ",robot.pos,"GOAL: ",robot.trajectory)
-    print("ROBOT: ", robot.phi)
+    #print("ROBOT: ", robot.phi)
 
 
     time.sleep(0.3)
@@ -116,8 +116,21 @@ def update_main():
     return v
     
 
-while True:
-    update_main()
+if __name__ == "__main__":
+    while True:
+        update_main()
+        #print("ROBOT: ", robot.phi, "GOAL: ",robot.teta)
+        #print("ROBOT: ", robot.pos, "GOAL: ",robot.trajectory)
+        angle =np.rad2deg(np.arctan2(robot.trajectory[1] - robot.pos[1],robot.trajectory[0] - robot.pos[0]))
+        #print("ANGLE: ",angle)
+        angle = robot.phi - angle + 90
+        # between 270 and -90
+        #if(angle > 180):
+            #angle = angle - 360
+        robot.teta = angle
+
+        print("ROBOT: ", angle)
+        time.sleep(0.5)
 
 
 

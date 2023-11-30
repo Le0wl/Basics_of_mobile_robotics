@@ -23,6 +23,14 @@ class ArucoMarker:
         self.focal_length = 1000  # Example focal length (adjust as needed)
         self.center = (640/2, 480/2)  # Example center of the frame, replace with actual center
 
+
+        self.num_frames_average_black = 30   # Adjust this value
+        self.max_tracked_objects_black = 8
+        self.blk_avg_count = 0
+        self.avg_cx_black = [0] * self.max_tracked_objects_black
+        self.avg_cy_black = [0] * self.max_tracked_objects_black
+        self.num_tracked_objects = 0
+
     def update_marker(self, frame):
         #Placeholder camera parameters
         focal_length = 1000  # Example focal length (adjust as needed)
@@ -107,10 +115,88 @@ class ArucoMarker:
 
                         # Check if unit_pos is within frame boundaries
                         if 0 <= unit_pos[0] < frame.shape[1] and 0 <= unit_pos[1] < frame.shape[0]:
-                            frame = cv2.circle(frame, unit_pos, 2, (0, 0, 255), -1)
+                            if i == 2 and j == 2:
+                                frame = cv2.circle(frame, unit_pos, 5, (0, 0, 255), -1)
+                            else:
+                                frame = cv2.circle(frame, unit_pos, 2, (255, 0, 0), -1)
                             #frame = cv2.circle(frame, (340,100), 1, (0, 255, 0), -1)
                             #print("UNIT: ",unit_pos)
         
+
+        return frame
+    
+    
+    def track_black(self, frame):
+
+        ## ----------Detecting Black Objects----------
+        
+        # Convert the frame to grayscale
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                
+        # Apply adaptive thresholding
+        # . Pixels with intensity greater than 45 are set to 255 (white), and others are set to 0 (black). 
+        # Lowering the threshold to detect darker colors
+        _, thresh = cv2.threshold(gray, 60, 255, cv2.THRESH_BINARY_INV)
+
+        # Apply morphological operations to reduce noise
+        # Small kernel = track small objects, large kernel = more likely to smooth out details and may help in reducing noise or small variations
+        kernel = np.ones((5, 5), np.uint8)  # creates a 5x5 square shaped kernel
+        # Changing the iterations will help to improve the noise. 
+        # Each iteration of the operation modifies the image, and the result becomes the input for the next iteration.
+        opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=3)
+
+        # ------------Detecting and averaging centroid----------
+        # Find contours in the binary image
+        contours, _ = cv2.findContours(opening, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Sort contours based on area in descending order and count the number of tracked objects
+        sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)[:self.max_tracked_objects_black]
+
+        # Update the number of tracked objects
+        num_tracked_objects = min(len(sorted_contours), self.max_tracked_objects_black)
+
+        # Calculate the average centroid value
+        for i, contour in enumerate(sorted_contours):
+
+            M_black = cv2.moments(contour)
+            if M_black["m00"] != 0:
+                cx_black = int(M_black["m10"] / M_black["m00"])
+                cy_black = int(M_black["m01"] / M_black["m00"])
+            else:
+                cx_black, cy_black = 0, 0
+
+            if i < self.max_tracked_objects_black:
+                self.avg_cx_black[i] += cx_black
+                self.avg_cy_black[i] += cy_black
+
+            # Draw a dot at the centroid
+            cv2.circle(frame, (cx_black, cy_black), 2, (120, 0, 120), -1)
+
+            # Draw the bounding box
+            x, y, w, h = cv2.boundingRect(contour)
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (120, 0, 120), 2)
+
+            # Add the label "Obstacle" inside the bounding box
+            label = "Obstacle".format(cx_black, cy_black)
+            cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2, cv2.LINE_AA)
+
+        # Counter for average centroid
+        self.blk_avg_count += 1
+        # print("Black counter: {}".format(blk_avg_count))
+
+        if self.blk_avg_count == self.num_frames_average_black:
+            for i in range(self.num_tracked_objects):
+                self.avg_cx_black[i] = round(self.avg_cx_black[i] / self.num_frames_average_black, 2)
+                self.avg_cy_black[i] = round(self.avg_cy_black[i] / self.num_frames_average_black, 2)
+                #print("Obstacle_Center {}: ({}, {})".format(i+1, self.avg_cx_black[i], self.avg_cy_black[i]))
+
+
+            # Reset the accumulated values and counter for the next set of frames
+            self.blk_avg_count = 0
+            self.avg_cx_black = [0] * self.max_tracked_objects_black
+            self.avg_cy_black = [0] * self.max_tracked_objects_black
+                
+
 
         return frame
 
@@ -132,6 +218,7 @@ def main_aruco(*markers):
         for marker in markers:
             frame = marker.update_marker(frame)
             #print(f"Marker ID: {marker.marker_id}, Angle: {marker.angle:.2f}")
+        frame = marker.track_black(frame)  # Create a copy to preserve the original frame
 
         cv2.imshow('Markers Detection', frame)
 
