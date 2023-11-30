@@ -7,7 +7,7 @@ import time
 
 __init__ = ['robot']
 CRUISING_SPEED = 80
-TURNING_SPEED = 50
+#TURNING_SPEED = 50
 class robot:
     def __init__(self):
         self.pos = np.array([0,0])                                      # position of the robot
@@ -28,6 +28,7 @@ class robot:
 
     def turn(self,speed,angle):
         self.state = 'TURN'     # state of the robot
+        TURNING_SPEED = 30 #angle/2
         if(angle < 0):
             self.v = {"motor.left.target": [-TURNING_SPEED],
                  "motor.right.target": [TURNING_SPEED],}
@@ -54,7 +55,7 @@ class robot:
         print('Robot bottom marker position: ',self.pos_marker_bottom)
         print('---------------------------')
 
-    def run_robot(self,marker_position,marker_angle):
+    def run_robot(self,marker_position,angle):
         """
         This function is used to control the robot. It is callaed in a thread and runs at 10HZ.
         """
@@ -63,16 +64,17 @@ class robot:
             next_goal = self.trajectory
 
             #self.teta = np.rad2deg(np.arctan2(next_goal[1] - self.pos[1],next_goal[0] - self.pos[0]))
-            self.teta = 90
+            #self.teta = 90
             #print("GOAL: ",next_goal,"POS: ",self.pos)
             #print("INNNNNNNNNNN")
             #self.pos = marker_position    
             #self.phi = marker_angle 
             
             while np.linalg.norm(next_goal - self.pos) > 0.1:
-                
-                if np.abs(self.phi - self.teta) > 5:
-                    self.turn(TURNING_SPEED,self.phi - self.teta)
+                print("teta:  ",self.teta)
+
+                if np.abs(self.teta) > 2:
+                    self.turn(0,self.teta)
                     self.state = 'TURN'
                     #print("PHI: ",self.phi, "TETA: ",self.teta)
                     #print('Turning')

@@ -109,6 +109,23 @@ def update_main():
     #print("ROBOT: ",robot.pos,"GOAL: ",robot.trajectory)
     #print("ROBOT: ", robot.phi)
 
+    angle =np.rad2deg(np.arctan2(-robot.trajectory[1] + robot.pos[1],robot.trajectory[0] - robot.pos[0])) + 180
+    if angle > 180:
+        angle = angle - 360
+        #print("ANGLE: ",angle)
+        #angle = robot.phi - angle + 90
+        # between 270 and -90
+        #if(angle > 180):
+            #angle = angle - 360
+        # angle goes from left to right starting from 180
+        
+        
+    robot.teta = robot.phi - angle + 180
+
+    if(robot.teta > 180):
+        robot.teta = robot.teta - 360
+
+        #print("GOAL", angle, "TETA", robot.teta)
 
     time.sleep(0.3)
 
@@ -121,15 +138,23 @@ if __name__ == "__main__":
         update_main()
         #print("ROBOT: ", robot.phi, "GOAL: ",robot.teta)
         #print("ROBOT: ", robot.pos, "GOAL: ",robot.trajectory)
-        angle =np.rad2deg(np.arctan2(robot.trajectory[1] - robot.pos[1],robot.trajectory[0] - robot.pos[0]))
+        angle =np.rad2deg(np.arctan2(-robot.trajectory[1] + robot.pos[1],robot.trajectory[0] - robot.pos[0])) + 180
+        if angle > 180:
+            angle = angle - 360
         #print("ANGLE: ",angle)
-        angle = robot.phi - angle + 90
+        #angle = robot.phi - angle + 90
         # between 270 and -90
         #if(angle > 180):
             #angle = angle - 360
-        robot.teta = angle
+        # angle goes from left to right starting from 180
+        
+        
+        robot.teta = robot.phi - angle + 180
 
-        print("ROBOT: ", angle)
+        if(robot.teta > 180):
+            robot.teta = robot.teta - 360
+
+        #print("GOAL", angle, "TETA", robot.teta)
         time.sleep(0.5)
 
 
