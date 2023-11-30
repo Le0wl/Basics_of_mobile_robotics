@@ -28,6 +28,8 @@ map_base = environment()
 robot = robot()
 #detect = RobotPosOrient()
 
+
+
 markers = [ArucoMarker(marker_id) for marker_id in range(1, 6)]  # Create instances for each ArUco marker
 
 # Create a thread for the ArUco marker detection
