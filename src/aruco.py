@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import time
 
+Map_camera = np.zeros((3,3,2))
+
 class ArucoMarker:
     def __init__(self, marker_id):
         self.pos = np.array([0, 0])
@@ -35,8 +37,8 @@ class ArucoMarker:
             #x_pos = tvecs[0][0][0] / frame.shape[1]
             #y_pos = tvecs[0][0][1] / frame.shape[0]
             #give position of marker from 0 to 1 in camera frame with origin in bottom left
-            x_pos = tvecs[0][0][0] / frame.shape[1] + 0.5 
-            y_pos = tvecs[0][0][1] / frame.shape[0] + 0.5
+            x_pos = tvecs[0][0][0] #/ frame.shape[1] + 0.5 
+            y_pos = tvecs[0][0][1] #/ frame.shape[0] + 0.5
             self.pos = np.array([x_pos, y_pos])
 
             #angle = np.arctan2(rvecs[0][0][0], rvecs[0][0][1])
@@ -57,7 +59,7 @@ class ArucoMarker:
             if(angle > 180):
                 angle = angle - 360
             self.angle = angle
-            
+
 
 
             if(self.marker_id == 1):
@@ -70,8 +72,21 @@ class ArucoMarker:
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[3].ravel()), (100, 0, 0), 5)
             if(self.marker_id == 4):
                 cv2.putText(frame,"origin",(axis_points[1][0][0] ,axis_points[1][0][1]),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2,cv2.LINE_AA)
+            # display dots for ach Map unit
+            #for i in range(3):
+                #for j in range(3):
+                    #frame = cv2.circle(frame, ((int)(Map_camera[i,j,0] * 640),(int)(Map_camera[i,j,1]* 480)), 3, (0, 255, 0), -1)
+                    #coord1 = (int)((axis_points[1][0][0]) + 20)
+                    #coord2=(int)((axis_points[1][0][1])+20)
+                    #frame = cv2.circle(frame, coord1,coord2, 3, (0, 255, 0), -1)
+                    #print("Map: ",Map_camera[1,1,0],Map_camera[1,1,1])
+            # print the pixel position of the marker. do the conversion from camera back to screen
+            
 
+            
 
+            
+                
             
 
         return frame
@@ -103,3 +118,6 @@ def main_aruco(*markers):
     cap.release()
     cv2.destroyAllWindows()
 
+def set_map(map):
+    global Map_camera
+    Map_camera = map

@@ -30,16 +30,17 @@ class environment:
         self.origin = self.bottom_left
         # With the ratio between the top vertices and the bottom vertices, we can calculate the position of each unit
         # in the map
-        ratio = (self.top_right - self.top_left) / (self.bottom_right - self.bottom_left)
-
+        #ratio = (self.top_right - self.top_left) / (self.bottom_right - self.bottom_left)
+        ratio = [1,1]
         # Calculate the position of each unit in the map
         for i in range(MAP_UNITS):
             for j in range(MAP_UNITS):
-                self.map[i,j] = self.origin + np.array([self.unit_size * ratio[0] * j, self.unit_size * ratio[1] * i])
+                self.map[i,j] = self.bottom_left + np.array([self.unit_size * ratio[0] * j, self.unit_size * ratio[1] * i])
+                #self.map[i,j] = [1,1]
                 
         #print("MAP: ",self.map)
                 
-        time.sleep(1)
+        
 
 
 

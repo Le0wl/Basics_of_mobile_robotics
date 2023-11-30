@@ -10,7 +10,7 @@ sys.path.append('.\src')
 
 from robot import *
 from map import *
-from aruco import *
+import aruco
 from env import *
 
 
@@ -41,7 +41,7 @@ MAP_SIZE_METERS = 0.5
 MAP_UNITS = 3
 
 
-while True:
+def update_main():
     map_base.top_left = markers[1].pos
     map_base.top_right = markers[2].pos
     map_base.bottom_left = markers[3].pos
@@ -49,12 +49,24 @@ while True:
     map_base.update_map()
     #print("TOP LEFT: ",map_base.top_left)
     #clear terminal
-    print("ANGLE: ",markers[0].angle)
+    #print("ANGLE: ",markers[0].angle)
+    #print("HEIGHT: ",map_base.map_height)
 
-      
+    aruco.set_map(map_base.map)
+    angle = markers[0].angle
+    v = {"motor.left.target": [0],
+             "motor.right.target": [0],}
+    if(abs(angle) > 5):
+        robot.turn(20,angle)
+    else:
+        robot.stop()
+    
+    v = robot.v
+    
     #print("TOP RIGHT: ",map_base.top_right)
-    time.sleep(1)
-    print("\033c") 
+    time.sleep(0.1)
+    return v
+    #print("\033c") 
 
 
 
