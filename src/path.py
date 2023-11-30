@@ -5,12 +5,13 @@ from matplotlib import colors
 import astar as a
 
 class Map:
-    def __init__(self, obstacles, scale):
+    def __init__(self, obstacles, margin):
+        self.max = 50
         self.grid = self.init_grid(obstacles)
-        self.collision_proof = self.margin(obstacles, scale)
-
+        self.collision_proof = self.add_margin(obstacles, margin)
+        
     def init_grid(self, obstacles):
-        size = (50, 50)
+        size = (self.max, self.max)
         grid = np.zeros(size, dtype=int)
         for k in range(len(obstacles)):
             obsta = obstacles[k]
@@ -22,17 +23,36 @@ class Map:
                     grid[beginning[0] + i][beginning[1]+ j] = 1
         return(grid)
     
-    def margin(self, obstacles, scale):
-        size = (50, 50)
+    def add_margin(self, obstacles, margin):
+        inside = True
+        size = (self.max, self.max)
         grid = np.zeros(size, dtype=int)
         for k in range(len(obstacles)):
             obsta = obstacles[k]
-            beginning = obsta[0]
+            beginning = obsta[0] 
+            for j in range(2):
+                if beginning[j] < margin:
+                    beginning[j] = 0
+                elif beginning[j] >= self.max:
+                    inside = False
+                else: 
+                    beginning[j] -= margin
+
             end = obsta[1]
-            hight,width = end[0]-beginning[0]+2*scale,end[1]-beginning[1]+2*scale
+            for j in range(2):
+                if end[j] > self.max+margin:
+                    end[j] = self.max
+                elif end[j] <= 0:
+                    inside = False
+                else: 
+                    end[j] += margin
+            if inside == False:
+                break
+        
+            hight,width = end[0]-beginning[0]+2*margin, end[1]-beginning[1]+2*margin
             for i in range(hight):
                 for j in range(width):
-                    grid[beginning[0] + i - scale][beginning[1]+ j- scale] = 1
+                    grid[beginning[0] + i][beginning[1]+ j] = 1
         return(grid)
     
     def __len__(self):
@@ -48,34 +68,28 @@ class Map:
         self.grid[i][j] = element
 
     def plot_map(self, path):
+        map = self.grid
         for i in range(len(path)):
-            self.grid[path[i]] = 2
+            map[path[i]] = 2
         cmap = colors.ListedColormap(['white', 'black', 'red'])
-        plt.imshow(self.grid, cmap=cmap, interpolation='nearest')
+        plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
-def robo_pos(dots):
-    robot = (1,1)
-    nose, tail= dots[0],dots[1]
-    robot = round((nose[0]+tail[0])/2),round((nose[1]+tail[1])/2)
-    scale = round(np.sqrt((nose[0]-tail[0])^2+(nose[1]-tail[1])^2))
-    return(robot, scale)
-
-def get_path(dots, goal, obstacles):
-    #dots = [(0, 0),(2, 3)]
+def get_path(robot, goal, obstacles):
+    #dots = [(2, 3)]
     #goal = (17, 46)
     #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
-    robot, scale = robo_pos(dots)
-    maze = Map(obstacles, scale)
-    path = a.astar(maze.get_map(), robot, goal)
+    margin = 3
+    maze = Map(np.array(obstacles), margin)
+    path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
     maze.plot_map(path)
     return(path)
 
 def main():
-    dots = [(0, 0),(2, 3)]
-    goal = (30, 20)
-    obstacles = [((5,5),(10,7)),((36,5),(40,20)),((16,5),(20,20))] 
-    weg = get_path(dots, goal, obstacles)
+    robot = np.array([2, 3])
+    goal = np.array([40, 30])
+    obstacles = np.array([[[5,5],[10,20]],[[36,5],[40,20]],[[16,5],[20,20]]]) 
+    weg = get_path(robot, goal, obstacles)
     print(weg)
     return()
 
