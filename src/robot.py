@@ -28,7 +28,8 @@ class robot:
 
     def turn(self,speed,angle):
         self.state = 'TURN'     # state of the robot
-        TURNING_SPEED = 30 #angle/2
+        TURNING_SPEED = int(abs(self.teta/1.5) +10)
+        
         if(angle < 0):
             self.v = {"motor.left.target": [-TURNING_SPEED],
                  "motor.right.target": [TURNING_SPEED],}
@@ -70,10 +71,10 @@ class robot:
             #self.pos = marker_position    
             #self.phi = marker_angle 
             
-            while np.linalg.norm(next_goal - self.pos) > 0.1:
-                print("teta:  ",self.teta)
+            while np.linalg.norm(next_goal - self.pos) > 30:
+                #print("teta:  ",self.teta)
 
-                if np.abs(self.teta) > 2:
+                if np.abs(self.teta) > 5:
                     self.turn(0,self.teta)
                     self.state = 'TURN'
                     #print("PHI: ",self.phi, "TETA: ",self.teta)

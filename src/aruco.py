@@ -115,7 +115,7 @@ class ArucoMarker:
 
                         # Check if unit_pos is within frame boundaries
                         if 0 <= unit_pos[0] < frame.shape[1] and 0 <= unit_pos[1] < frame.shape[0]:
-                            if i == 2 and j == 2:
+                            if i == 0 and j == 3:
                                 frame = cv2.circle(frame, unit_pos, 5, (0, 0, 255), -1)
                             else:
                                 frame = cv2.circle(frame, unit_pos, 2, (255, 0, 0), -1)

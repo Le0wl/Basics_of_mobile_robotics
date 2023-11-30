@@ -102,7 +102,7 @@ def update_main():
             #print("MAP: ",map_base.map[i,j])
             #- np.array([i*ratio,0])
     aruco.set_map(map_base.map)
-    robot.trajectory = np.array(map_base.map[2,2])
+    robot.trajectory = np.array(map_base.map[0,3])
     #print("MAP: ",map_base.map)
     #print("ANGLE  " ,np.rad2deg(np.arctan2(map_base.map[2,2][1] - map_base.bottom_left[1],map_base.map[2,2][0] - map_base.bottom_left[0])), "ROBOT: ",robot.pos,"GOAL: ",robot.trajectory)
     #print("ORIGIN: ",map_base.origin, "GOAL: ",robot.trajectory)
@@ -136,27 +136,7 @@ def update_main():
 if __name__ == "__main__":
     while True:
         update_main()
-        #print("ROBOT: ", robot.phi, "GOAL: ",robot.teta)
-        #print("ROBOT: ", robot.pos, "GOAL: ",robot.trajectory)
-        angle =np.rad2deg(np.arctan2(-robot.trajectory[1] + robot.pos[1],robot.trajectory[0] - robot.pos[0])) + 180
-        if angle > 180:
-            angle = angle - 360
-        #print("ANGLE: ",angle)
-        #angle = robot.phi - angle + 90
-        # between 270 and -90
-        #if(angle > 180):
-            #angle = angle - 360
-        # angle goes from left to right starting from 180
-        
-        
-        robot.teta = robot.phi - angle + 180
-
-        if(robot.teta > 180):
-            robot.teta = robot.teta - 360
-
-        #print("GOAL", angle, "TETA", robot.teta)
-        time.sleep(0.5)
-
+       
 
 
 
