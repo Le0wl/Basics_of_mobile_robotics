@@ -6,7 +6,7 @@ import map
 import time
 
 __init__ = ['robot']
-CRUISING_SPEED = 80
+#CRUISING_SPEED = 80
 #TURNING_SPEED = 50
 class robot:
     def __init__(self):
@@ -16,12 +16,13 @@ class robot:
         self.teta = 0                                                   # trajectory angle of the robot
         self.speed = np.array([0,0])                                    #speed of right and left wheels
         self.state = 'STOP'                                             # state of the robot
-        self.trajectory = self.pos                    # trajectory of the robot
+        self.trajectory = self.pos                 # trajectory of the robot
         self.v = {"motor.left.target": [0],
                   "motor.right.target": [0],}
 
     def go_forward(self,speed):
         self.state = 'FORWARD'  # state of the robot
+        CRUISING_SPEED = int(np.abs(np.rad2deg(np.arctan2(self.trajectory[1] - self.pos[1],self.trajectory[0] - self.pos[0]))/1.5) + 50)
         self.v = {"motor.left.target": [CRUISING_SPEED],
              "motor.right.target": [CRUISING_SPEED],}
                
@@ -62,7 +63,7 @@ class robot:
         """
 
         while True:
-            next_goal = self.trajectory
+            #next_goal = self.trajectory
 
             #self.teta = np.rad2deg(np.arctan2(next_goal[1] - self.pos[1],next_goal[0] - self.pos[0]))
             #self.teta = 90
@@ -71,31 +72,33 @@ class robot:
             #self.pos = marker_position    
             #self.phi = marker_angle 
             
-            while np.linalg.norm(next_goal - self.pos) > 30:
+            #while np.linalg.norm(next_goal - self.pos) > 30:
                 #print("teta:  ",self.teta)
+            #print("DISTANCE: ",np.linalg.norm(next_goal - self.pos))
+            #print(np.linalg.norm(self.trajectory - self.pos))
+            if np.abs(self.teta) > 4:
+                self.turn(0,self.teta)
+                self.state = 'TURN'
+                #print("PHI: ",self.phi, "TETA: ",self.teta)
+                #print('Turning')
+            else:
+                self.go_forward(0)
+                self.state = 'FORWARD'
+                #print('Going forward')
 
-                if np.abs(self.teta) > 5:
-                    self.turn(0,self.teta)
-                    self.state = 'TURN'
-                    #print("PHI: ",self.phi, "TETA: ",self.teta)
-                    #print('Turning')
-                else:
-                    self.go_forward(CRUISING_SPEED)
-                    self.state = 'FORWARD'
-                    #print('Going forward')
-
-                if np.linalg.norm(next_goal - self.pos) < 0.1:
-                    #go to next trajectory point
-                    trajectory = np.delete(trajectory,0,1)
-                    #print('Next goal')
-                    self.state = 'STOP'
-                    break
-                if self.trajectory.size == 0:
-                    self.stop()
-                    #print('Goal reached')
-                    self.state = 'FINISH'
-                    break
-                    
+            #if np.linalg.norm(self.trajectory - self.pos) < 10:
+                #go to next trajectory point
+                #self.trajectory = np.delete(self.trajectory,0,1)
+                #print('Next goal',self.trajectory)
+                
+                #self.state = 'fake'
+                #break
+            if self.trajectory.size < 1:
+                self.stop()
+                #print('Goal reached')
+                self.state = 'FINISH'
+                break
+                
             time.sleep(0.1)
     
 

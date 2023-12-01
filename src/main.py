@@ -5,6 +5,7 @@ import threading
 import sys 
 import asyncio
 import cv2
+import random
 
 sys.path.append('.\src')
 
@@ -43,6 +44,9 @@ MAP_UNITS = 4
 print("MAIN")
 
 
+
+
+#robot.trajectory = np.array(map_base.map[0,3])
 
 def update_main():
     map_base.top_left = markers[1].pos
@@ -87,7 +91,7 @@ def update_main():
     #if np.linalg.norm(map_base.top_right - map_base.top_left) > 0 and np.linalg.norm(map_base.bottom_right - map_base.bottom_left) > 0:
         #ratio = np.linalg.norm(map_base.bottom_right - map_base.bottom_left) / np.linalg.norm(map_base.top_right - map_base.top_left)*3
     #else:
-    ratio = 1
+    ratio = 0.5
     
     angle_map = markers[1].angle
     #print("ANGLE: ",angle_map)
@@ -98,11 +102,29 @@ def update_main():
             #map_base.map[i,j] = map_base.bottom_left + np.array([j*ratio,0]) + np.array([(2*i+1)*(distance_horizontal - j*2*ratio)/(2*MAP_UNITS) , -(2*j+1)*distance_vertical/(2*MAP_UNITS) ])
             x_pos = j*ratio + (2*i+1)*(distance_horizontal - j*2*ratio)/(2*MAP_UNITS)
             y_pos = -(2*j+1)*distance_vertical/(2*MAP_UNITS)
+
             map_base.map[i,j] = map_base.top_left + np.array([x_pos,y_pos])
             #print("MAP: ",map_base.map[i,j])
             #- np.array([i*ratio,0])
     aruco.set_map(map_base.map)
-    robot.trajectory = np.array(map_base.map[0,3])
+    #robot.trajectory = np.array(map_base.map[1,2])
+    
+    #markers[3].goal_idx = [1,2]
+    goal_i = markers[3].goal_idx[0]
+    goal_j = markers[3].goal_idx[1]
+
+    
+
+    #print("STATE: ",robot.state, "DISTANCE: ",np.linalg.norm(robot.trajectory - robot.pos))
+
+    if np.linalg.norm(robot.trajectory - robot.pos) < 15:
+        #print("STATE: ",robot.state, "DISTANCE: ",np.linalg.norm(robot.trajectory - robot.pos))
+        print("CLOSE")
+        goal_i = random.randint(0,3)
+        goal_j = random.randint(0,3)
+
+    markers[3].goal_idx = [goal_i,goal_j]
+    robot.trajectory = np.array(map_base.map[goal_i,goal_j])
     #print("MAP: ",map_base.map)
     #print("ANGLE  " ,np.rad2deg(np.arctan2(map_base.map[2,2][1] - map_base.bottom_left[1],map_base.map[2,2][0] - map_base.bottom_left[0])), "ROBOT: ",robot.pos,"GOAL: ",robot.trajectory)
     #print("ORIGIN: ",map_base.origin, "GOAL: ",robot.trajectory)
