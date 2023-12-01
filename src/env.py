@@ -1,7 +1,7 @@
 from aruco import *
 from robot import *
 import time
-MAP_UNITS = 4
+from constants import *
 class environment:
     def __init__(self):
         self.top_left = np.array([0,0])
@@ -21,7 +21,7 @@ class environment:
         #self.origin = self.bottom_left + np.array([self.unit_size / 2, self.unit_size / 2])
 
         # A 6by6 matrix containing x y coordinates of units
-        self.map = np.zeros((MAP_UNITS,MAP_UNITS,2))
+        self.map = np.zeros((UNIT_NUMBER,UNIT_NUMBER,2))
 
     def update_map(self):
         #self.map_height = abs(((self.top_left[1] - self.bottom_left[1]) + (self.top_right[1] - self.bottom_right[1])) / 2)

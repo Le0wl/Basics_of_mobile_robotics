@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 import time
+from constants import *
 
-Map_camera = np.zeros((6,6,2))
-UNIT_NUMBER = 4
+Map_camera = np.zeros((UNIT_NUMBER,UNIT_NUMBER,2))
 
 class ArucoMarker:
     """
@@ -88,22 +88,7 @@ class ArucoMarker:
             if(self.marker_id == 4):
                 cv2.putText(frame,"o",(axis_points[1][0][0] ,axis_points[1][0][1]),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2,cv2.LINE_AA)
                 # display circle in the center of the marker (self.pos)
-                #frame = cv2.circle(frame, tuple(self.pos), 5, (0, 0, 255), -1)
-                """
-                for i in range(3):
-
-                    unit_pos = np.array([Map_camera[i][0][0], Map_camera[i][0][1]]) 
-                    # + np.array([self.marker_pxl_size/2, 0]) + np.array([Map_camera[i][0][0], 0]) 
-
-                    # Ensure unit_pos contains integer values and convert to tuple
-                    unit_pos = tuple(map(int, unit_pos))
-                    
-                    #unit_pos = self.pos
-
-                    # Check if unit_pos is within frame boundaries
-                    if 0 <= unit_pos[0] < frame.shape[1] and 0 <= unit_pos[1] < frame.shape[0]:
-                        frame = cv2.circle(frame, unit_pos, 5, (0, 0, 255), -1)
-                    """
+               
                 #display all the unit positions
                 for i in range(UNIT_NUMBER):
                     for j in range(UNIT_NUMBER):
@@ -118,9 +103,9 @@ class ArucoMarker:
                         # Check if unit_pos is within frame boundaries
                         if 0 <= unit_pos[0] < frame.shape[1] and 0 <= unit_pos[1] < frame.shape[0]:
                             if i == self.goal_idx[0] and j == self.goal_idx[1]:
-                                frame = cv2.circle(frame, unit_pos, 5, (0, 0, 255), -1)
+                                frame = cv2.circle(frame, unit_pos, 3, (0, 0, 255), -1)
                             else:
-                                frame = cv2.circle(frame, unit_pos, 2, (255, 0, 0), -1)
+                                frame = cv2.circle(frame, unit_pos, 1, (255, 0, 0), -1)
                             #frame = cv2.circle(frame, (340,100), 1, (0, 255, 0), -1)
                             #print("UNIT: ",unit_pos)
         
