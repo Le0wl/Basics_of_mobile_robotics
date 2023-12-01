@@ -82,7 +82,10 @@ def update_main():
         goal_j = random.randint(0,UNIT_NUMBER-1)
 
     markers[3].goal_idx = [goal_i,goal_j]
-    robot.trajectory = np.array(map_base.map[goal_i,goal_j])
+    #robot.trajectory = np.array(map_base.map[goal_i,goal_j])
+    
+    robot.trajectory = markers[4].centroid_goal
+    #print("GOAL5: ",robot.trajectory)
     
 
 #============================= ANGLE CALCULATION ====================================================
