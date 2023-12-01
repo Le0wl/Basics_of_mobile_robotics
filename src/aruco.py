@@ -194,20 +194,35 @@ class ArucoMarker:
         for i in range(self.nb_obstacles):
             top_left = self.detected_obstacles[i]['top_left']
             bottom_right = self.detected_obstacles[i]['bottom_right']
+        
             for j in range(UNIT_NUMBER):
                 for k in range(UNIT_NUMBER):
                     if top_left[0] < Map_camera[j][k][0] < bottom_right[0] and top_left[1] < Map_camera[j][k][1] < bottom_right[1]:
-                        matrix[j][k] = 1
+                        matrix[j][k] = OBSTACLE
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 255, 0), -1)
 
         # Set to 2 the unit where the goal is
         for j in range(UNIT_NUMBER):
             for k in range(UNIT_NUMBER):
-                if self.centroid_goal[0] < Map_camera[j][k][0] < self.centroid_goal[0] + 30 and self.centroid_goal[1] < Map_camera[j][k][1] < self.centroid_goal[1] + 30:
-                    matrix[j][k] = 2
-                    print("GOAL: ",j,k)
+                if self.centroid_goal[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.centroid_goal[0] + PIXEL_MARGIN and self.centroid_goal[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.centroid_goal[1] + PIXEL_MARGIN:
+                    matrix[j][k] = GOAL
+                    #print("GOAL: ",j,k)
+                    frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
+                    break
+
+        # Set to 3 the unit where the robot is
+        if self.marker_id == 1:
+            for j in range(UNIT_NUMBER):
+                for k in range(UNIT_NUMBER):
+                    if self.pos[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.pos[0] + PIXEL_MARGIN and self.pos[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.pos[1] + PIXEL_MARGIN:
+                        matrix[j][k] = ROBOT
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
+                        #print("ROBOT: ",j,k)
+                        break
         
         
         Map_indices = matrix
+        #print("MAP: ",Map_indices)
         
 
 
@@ -232,6 +247,7 @@ def main_aruco(*markers):
         frame = marker.detect_goal(frame)
 
         marker.update_map_matrix(frame)
+        #markers[0].update_map_matrix(frame)
 
         cv2.imshow('Markers Detection', frame)
 
