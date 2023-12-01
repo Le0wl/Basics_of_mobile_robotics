@@ -76,6 +76,7 @@ class ObjectTracker:
         # Update the number of tracked objects
         num_tracked_objects = min(len(sorted_contours), self.max_tracked_objects_black)
 
+        bbox = []
         # Calculate the average centroid value
         for i, contour in enumerate(sorted_contours):
 
@@ -97,6 +98,7 @@ class ObjectTracker:
             x, y, w, h = cv2.boundingRect(contour)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (120, 0, 120), 2)
 
+            bbox.append(((x,y), (x+w, y+h)))
             # Add the label "Obstacle" inside the bounding box
             label = "Obstacle".format(cx_black, cy_black)
             cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2, cv2.LINE_AA)
@@ -118,7 +120,7 @@ class ObjectTracker:
                 
 
 
-        return frame
+        return frame, bbox
 
     def track_blue(self, frame):
         ## ----------Detecting Blue Objects----------

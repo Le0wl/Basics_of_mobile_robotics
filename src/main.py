@@ -23,6 +23,8 @@ trajectory = np.array([[0,0],[0,0]])
 map_base = environment()
 robot = robot()
 
+
+
 markers = [ArucoMarker(marker_id) for marker_id in range(1, 6)]  # Create instances for each ArUco marker
 
 # Create a thread for the ArUco marker detection
