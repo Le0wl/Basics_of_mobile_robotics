@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
 import time
+from constants import *
 
-Map_camera = np.zeros((6,6,2))
-UNIT_NUMBER = 4
+Map_camera = np.zeros((UNIT_NUMBER,UNIT_NUMBER,2)) # 2D array containing the position of each unit in the map
+Map_indices = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
 
 class ArucoMarker:
     """
@@ -22,6 +23,22 @@ class ArucoMarker:
         self.marker_pxl_size = 0
         self.focal_length = 1000  # Example focal length (adjust as needed)
         self.center = (640/2, 480/2)  # Example center of the frame, replace with actual center
+        self.goal_idx = np.array([0, 0])
+
+
+
+        self.num_frames_average_red = 30   # Adjust this value
+        self.max_tracked_objects_red = 2   # Adjust this value
+        self.red_avg_count = 0
+        self.avg_cx_red = [0] * self.max_tracked_objects_red
+        self.avg_cy_red = [0] * self.max_tracked_objects_red
+        self.num_tracked_objects_red = 0
+        self.pos_red = np.array([[0,0],[0,0]])
+
+        self.detected_obstacles = []
+        self.detected_goal = []
+        self.centroid_goal = np.array([0,0])
+        self.nb_obstacles = 0
 
     def update_marker(self, frame):
         #Placeholder camera parameters
@@ -32,10 +49,9 @@ class ArucoMarker:
                                      [0, focal_length, center[1]],
                                     [0, 0, 1]], dtype=np.float64)
 
-        distCoeffs = np.zeros((4, 1))  # Placeholder distortion coefficients
+        distCoeffs = np.zeros((4, 1))  
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         corners, ids, _ = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
-        #self.marker_size = np.linalg.norm(corners[0][0][0] - corners[0][0][1])
         
         if ids is not None and self.marker_id in ids:
             idx = np.where(ids == self.marker_id)[0][0]
@@ -43,13 +59,6 @@ class ArucoMarker:
 
 
             self.marker_pxl_size = np.linalg.norm(corners[idx][0][0] - corners[idx][0][1])
-            #x_pos = tvecs[0][0][0] #/ frame.shape[1] + 0.5 
-            #y_pos = tvecs[0][0][1] #/ frame.shape[0] + 0.5
-            # center of the image is 320 and 240. We set the position in this referential
-            #x_pos = tvecs[0][0][0] + 320
-            #y_pos = tvecs[0][0][1] + 240
-
-            #self.pos = np.array([x_pos, y_pos])
 
             axis_length = self.marker_size / 2
             points = np.float32([[0, 0, 0], [axis_length, 0, 0], [0, axis_length, 0], [0, 0, -axis_length]]).reshape(-1, 3, 1)
@@ -68,51 +77,155 @@ class ArucoMarker:
 
             if(self.marker_id == 1):
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 255, 0), 2)
-                #cv2.putText(frame,"Thymio",(axis_points[1][0][0],axis_points[1][0][1]),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),2,cv2.LINE_AA)
-                #print("Marker ID: ", self.marker_id, "Angle: ", self.angle)
-            else:
-                frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 0, 100), 5)
-                frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[2].ravel()), (0, 100, 0), 5)
-                frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[3].ravel()), (100, 0, 0), 5)
+            #else:
+                #frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 0, 100), 5)
+                #frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[2].ravel()), (0, 100, 0), 5)
+                #frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[3].ravel()), (100, 0, 0), 5)
 
             if(self.marker_id == 4):
-                cv2.putText(frame,"o",(axis_points[1][0][0] ,axis_points[1][0][1]),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2,cv2.LINE_AA)
+                #cv2.putText(frame,"o",(axis_points[1][0][0] ,axis_points[1][0][1]),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2,cv2.LINE_AA)
                 # display circle in the center of the marker (self.pos)
-                #frame = cv2.circle(frame, tuple(self.pos), 5, (0, 0, 255), -1)
-                """
-                for i in range(3):
-
-                    unit_pos = np.array([Map_camera[i][0][0], Map_camera[i][0][1]]) 
-                    # + np.array([self.marker_pxl_size/2, 0]) + np.array([Map_camera[i][0][0], 0]) 
-
-                    # Ensure unit_pos contains integer values and convert to tuple
-                    unit_pos = tuple(map(int, unit_pos))
-                    
-                    #unit_pos = self.pos
-
-                    # Check if unit_pos is within frame boundaries
-                    if 0 <= unit_pos[0] < frame.shape[1] and 0 <= unit_pos[1] < frame.shape[0]:
-                        frame = cv2.circle(frame, unit_pos, 5, (0, 0, 255), -1)
-                    """
+               
                 #display all the unit positions
                 for i in range(UNIT_NUMBER):
                     for j in range(UNIT_NUMBER):
                         unit_pos = np.array([Map_camera[i][j][0], Map_camera[i][j][1]]) 
-                        # + np.array([self.marker_pxl_size/2, 0]) + np.array([Map_camera[i][0][0], 0]) 
 
                         # Ensure unit_pos contains integer values and convert to tuple
                         unit_pos = tuple(map(int, unit_pos))
-                        
-                        #unit_pos = self.pos
 
                         # Check if unit_pos is within frame boundaries
+                        """
                         if 0 <= unit_pos[0] < frame.shape[1] and 0 <= unit_pos[1] < frame.shape[0]:
-                            frame = cv2.circle(frame, unit_pos, 2, (0, 0, 255), -1)
+                            if i == self.goal_idx[0] and j == self.goal_idx[1]:
+                                frame = cv2.circle(frame, unit_pos, 3, (0, 0, 255), -1)
+                            else:
+                                frame = cv2.circle(frame, unit_pos, 1, (255, 0, 0), -1)
                             #frame = cv2.circle(frame, (340,100), 1, (0, 255, 0), -1)
                             #print("UNIT: ",unit_pos)
+                            """
         
 
         return frame
+    
+    
+    def detect_red_objects(self,frame):
+        # Convert the frame to HSV color space
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        
+        # Define the lower and upper bounds for the red color in HSV
+        lower_red = np.array([2, 15, 15])
+        upper_red = np.array([15, 230, 255])
+
+        # Create a mask to isolate red regions in the image
+        mask = cv2.inRange(hsv, lower_red, upper_red)
+
+        # Apply morphological operations to remove noise
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+        # Find contours of red objects
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # Loop through the contours to find the bounding boxes of red objects
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 500:  # Set a minimum area threshold
+                x, y, w, h = cv2.boundingRect(contour)
+                if w > 30 and h > 30:  # Set minimum width and height thresholds
+                    top_left = (x, y)
+                    bottom_right = (x + w, y + h)
+                    self.detected_obstacles.append({'top_left': top_left, 'bottom_right': bottom_right})
+                    # Draw contours around the detected objects on the frame
+                    cv2.rectangle(frame, top_left, bottom_right, (0, 0, 200), 2)
+
+        self.nb_obstacles = len(self.detected_obstacles)
+
+        return frame
+    
+    def detect_goal(self,frame):
+        # Convert the frame to HSV color space
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # Define the lower and upper bounds for the blue color in HSV
+        lower_blue = np.array([90, 50, 50])
+        upper_blue = np.array([130, 255, 255])
+
+        # Create a mask to isolate blue regions in the image
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        # Apply morphological operations to remove noise
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+        # Find contours of blue objects
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Loop through the contours to find the bounding boxes of blue objects
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 500:  # Set a minimum area threshold
+                x, y, w, h = cv2.boundingRect(contour)
+                self.centroid_goal = np.array([x + w/2, y + h/2])
+                #print("GOAL: ",self.centroid_goal)
+                
+                if w > 30 and h > 30:  # Set minimum width and height thresholds
+                    top_left = (x, y)
+                    bottom_right = (x + w, y + h)
+                    self.detected_goal.append({'top_left': top_left, 'bottom_right': bottom_right})
+                    
+                    # Draw contours around the detected objects on the frame
+                    cv2.rectangle(frame, top_left, bottom_right, (200, 0, 0), 2)
+        
+        
+
+
+        #self.nb_obstacles = len(self.detected_obstacles)
+
+        return frame
+      
+
+    def update_map_matrix(self,frame):
+        # Matrix representing if unit is obstacle, goal , robot or free
+        matrix = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
+        # Set to 1 the units where the obstacles are
+        for i in range(self.nb_obstacles):
+            top_left = self.detected_obstacles[i]['top_left']
+            bottom_right = self.detected_obstacles[i]['bottom_right']
+        
+            for j in range(UNIT_NUMBER):
+                for k in range(UNIT_NUMBER):
+                    if top_left[0] < Map_camera[j][k][0] < bottom_right[0] and top_left[1] < Map_camera[j][k][1] < bottom_right[1]:
+                        matrix[j][k] = OBSTACLE
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 255, 0), -1)
+
+        # Set to 2 the unit where the goal is
+        for j in range(UNIT_NUMBER):
+            for k in range(UNIT_NUMBER):
+                if self.centroid_goal[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.centroid_goal[0] + PIXEL_MARGIN and self.centroid_goal[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.centroid_goal[1] + PIXEL_MARGIN:
+                    matrix[j][k] = GOAL
+                    #print("GOAL: ",j,k)
+                    frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
+                    break
+
+        # Set to 3 the unit where the robot is
+        if self.marker_id == 1:
+            for j in range(UNIT_NUMBER):
+                for k in range(UNIT_NUMBER):
+                    if self.pos[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.pos[0] + PIXEL_MARGIN and self.pos[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.pos[1] + PIXEL_MARGIN:
+                        matrix[j][k] = ROBOT
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
+                        #print("ROBOT: ",j,k)
+                        break
+        
+        
+        Map_indices = matrix
+        #print("MAP: ",Map_indices)
+        
+
+
 
 def main_aruco(*markers):
     cap = cv2.VideoCapture(0)  # Use 0 for default camera, change the value for other cameras
@@ -120,9 +233,7 @@ def main_aruco(*markers):
     if not cap.isOpened():
         print("Cannot open camera")
         return
-
-    #markers = [ArucoMarker(marker_id) for marker_id in range(1, 6)]  # Create instances for each ArUco marker
-
+    
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -132,6 +243,11 @@ def main_aruco(*markers):
         for marker in markers:
             frame = marker.update_marker(frame)
             #print(f"Marker ID: {marker.marker_id}, Angle: {marker.angle:.2f}")
+        frame = marker.detect_red_objects(frame)  # Create a copy to preserve the original frame
+        frame = marker.detect_goal(frame)
+
+        marker.update_map_matrix(frame)
+        #markers[0].update_map_matrix(frame)
 
         cv2.imshow('Markers Detection', frame)
 

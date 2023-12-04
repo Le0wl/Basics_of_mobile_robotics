@@ -428,8 +428,8 @@ class ObjectTracker:
 
         self.video.release()
         cv2.destroyAllWindows()
-"""
+
 if __name__ == "__main__":
     tracker = ObjectTracker()
-    tracker.main()
-"""
+    tracker.camera_feed()
+
