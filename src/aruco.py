@@ -23,7 +23,9 @@ class ArucoMarker:
         self.marker_pxl_size = 0
         self.focal_length = 1000  # Example focal length (adjust as needed)
         self.center = (640/2, 480/2)  # Example center of the frame, replace with actual center
+        self.robot_idx = np.array([0, 0])
         self.goal_idx = np.array([0, 0])
+        self.Map_indices = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
 
 
 
@@ -209,9 +211,10 @@ class ArucoMarker:
         for j in range(UNIT_NUMBER):
             for k in range(UNIT_NUMBER):
                 if self.centroid_goal[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.centroid_goal[0] + PIXEL_MARGIN and self.centroid_goal[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.centroid_goal[1] + PIXEL_MARGIN:
-                    matrix[j][k] = GOAL
+                    #matrix[j][k] = GOAL
                     #print("GOAL: ",j,k)
                     frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
+                    self.goal_idx = np.array([j, k])
                     break
 
         # Set to 3 the unit where the robot is
@@ -219,13 +222,14 @@ class ArucoMarker:
             for j in range(UNIT_NUMBER):
                 for k in range(UNIT_NUMBER):
                     if self.pos[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.pos[0] + PIXEL_MARGIN and self.pos[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.pos[1] + PIXEL_MARGIN:
-                        matrix[j][k] = ROBOT
+                        #matrix[j][k] = ROBOT
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
+                        self.robot_idx = np.array([j, k])
                         #print("ROBOT: ",j,k)
                         break
         
         
-        Map_indices = matrix
+        self.Map_indices = matrix
         #print("MAP: ",Map_indices)
         
 
