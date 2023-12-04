@@ -20,12 +20,14 @@ class robot:
         self.v = {"motor.left.target": [0],
                   "motor.right.target": [0],}
 
-    def go_forward(self,speed):
+    def go_forward(self,angle):
         self.state = 'FORWARD'  # state of the robot
         #CRUISING_SPEED = int(np.abs(2*np.rad2deg(np.arctan2(self.trajectory[1] - self.pos[1],self.trajectory[0] - self.pos[0]))/1.5) + 50)
-        CRUISING_SPEED = 200
-        self.v = {"motor.left.target": [CRUISING_SPEED],
-             "motor.right.target": [CRUISING_SPEED],}
+        CRUISING_SPEED = 200 
+        SPEED_LEFT = int(CRUISING_SPEED + angle/5)
+        SPEED_RIGHT = int(CRUISING_SPEED - angle/5)
+        self.v = {"motor.left.target": [SPEED_LEFT],
+             "motor.right.target": [SPEED_RIGHT],}
                
 
     def turn(self,speed,angle):
@@ -83,7 +85,7 @@ class robot:
                 #print("PHI: ",self.phi, "TETA: ",self.teta)
                 #print('Turning')
             else:
-                self.go_forward(0)
+                self.go_forward(self.teta)
                 self.state = 'FORWARD'
                 #print('Going forward')
 

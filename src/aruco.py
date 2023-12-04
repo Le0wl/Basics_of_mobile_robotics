@@ -194,12 +194,14 @@ class ArucoMarker:
         for i in range(self.nb_obstacles):
             top_left = self.detected_obstacles[i]['top_left']
             bottom_right = self.detected_obstacles[i]['bottom_right']
-        
+
             for j in range(UNIT_NUMBER):
                 for k in range(UNIT_NUMBER):
                     if top_left[0] < Map_camera[j][k][0] < bottom_right[0] and top_left[1] < Map_camera[j][k][1] < bottom_right[1]:
                         matrix[j][k] = OBSTACLE
-                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 255, 0), -1)
+                        #print("OBSTACLE: ",j,k)
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 255, ), -1)
+                        
 
         # Set to 2 the unit where the goal is
         for j in range(UNIT_NUMBER):
@@ -229,6 +231,8 @@ class ArucoMarker:
 
 def main_aruco(*markers):
     cap = cv2.VideoCapture(0)  # Use 0 for default camera, change the value for other cameras
+    #open image instead
+    #cap = cv2.imread('aruco_test.png')
 
     if not cap.isOpened():
         print("Cannot open camera")
@@ -246,8 +250,9 @@ def main_aruco(*markers):
         frame = marker.detect_red_objects(frame)  # Create a copy to preserve the original frame
         frame = marker.detect_goal(frame)
 
-        marker.update_map_matrix(frame)
-        #markers[0].update_map_matrix(frame)
+        
+        markers[0].update_map_matrix(frame)
+        markers[4].update_map_matrix(frame)
 
         cv2.imshow('Markers Detection', frame)
 
