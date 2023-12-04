@@ -190,6 +190,7 @@ class ArucoMarker:
     def update_map_matrix(self,frame):
         # Matrix representing if unit is obstacle, goal , robot or free
         matrix = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
+
         # Set to 1 the units where the obstacles are
         for i in range(self.nb_obstacles):
             top_left = self.detected_obstacles[i]['top_left']
@@ -200,7 +201,8 @@ class ArucoMarker:
                     if top_left[0] < Map_camera[j][k][0] < bottom_right[0] and top_left[1] < Map_camera[j][k][1] < bottom_right[1]:
                         matrix[j][k] = OBSTACLE
                         #print("OBSTACLE: ",j,k)
-                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 255, ), -1)
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 0, 255), -1)
+                        
                         
 
         # Set to 2 the unit where the goal is
@@ -251,8 +253,9 @@ def main_aruco(*markers):
         frame = marker.detect_goal(frame)
 
         
-        markers[0].update_map_matrix(frame)
-        markers[4].update_map_matrix(frame)
+        #markers[0].update_map_matrix(frame)
+        #markers[4].update_map_matrix(frame)
+        marker.update_map_matrix(frame)
 
         cv2.imshow('Markers Detection', frame)
 

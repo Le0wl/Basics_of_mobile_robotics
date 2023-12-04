@@ -14,6 +14,7 @@ from map import *
 import aruco
 from env import *
 from constants import *
+from path import *
 
 
 
@@ -22,6 +23,7 @@ trajectory = np.array([[0,0],[0,0]])
 
 map_base = environment()
 robot = robot()
+
 
 
 

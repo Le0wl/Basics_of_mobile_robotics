@@ -3,26 +3,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import astar as a
+from constants import *
 
 class Map:
-    def __init__(self, obstacles, margin):
-        self.max = 50
+    def __init__(self):
+        self.max = UNIT_NUMBER
         self.grid = self.init_grid(obstacles)
         self.collision_proof = self.add_margin(obstacles, margin)
+
         
-    def init_grid(self, obstacles):
+    def init_grid(self):
         size = (self.max, self.max)
         grid = np.zeros(size, dtype=int)
-        for k in range(len(obstacles)):
-            obsta = obstacles[k]
-            beginning = obsta[0]
-            end = obsta[1]
-            hight,width = end[0]-beginning[0],end[1]-beginning[1]
-            for i in range(hight):
-                for j in range(width):
-                    grid[beginning[0] + i][beginning[1]+ j] = 1
-        return(grid)
+        # for k in range(len(obstacles)):
+        #     obsta = obstacles[k]
+        #     beginning = obsta[0]
+        #     end = obsta[1]
+        #     hight,width = end[0]-beginning[0],end[1]-beginning[1]
+        #     for i in range(hight):
+        #         for j in range(width):
+        #             grid[beginning[0] + i][beginning[1]+ j] = 1
+        # return(grid)
     
+    def update_map(self, matirx):
+        self.grid = matirx
+        
     def add_margin(self, obstacles, margin):
         inside = True
         size = (self.max, self.max)
