@@ -129,7 +129,7 @@ class ArucoMarker:
 
         # Find contours of red objects
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
+        self.detected_obstacles = []
         # Loop through the contours to find the bounding boxes of red objects
         for contour in contours:
             area = cv2.contourArea(contour)
@@ -204,7 +204,7 @@ class ArucoMarker:
                         matrix[j][k] = OBSTACLE
                         #print("OBSTACLE: ",j,k)
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 0, 255), -1)
-                        
+        print("NUM OBSTACLES: ",self.nb_obstacles)
                         
 
         # Set to 2 the unit where the goal is
