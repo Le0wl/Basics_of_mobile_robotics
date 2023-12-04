@@ -4,17 +4,21 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 import astar as a
 from constants import *
+from aruco import*
 
 class Map:
     def __init__(self):
         self.max = UNIT_NUMBER
-        self.grid = self.init_grid(obstacles)
-        self.collision_proof = self.add_margin(obstacles, margin)
+        self.grid = self.init_grid()
+        # self.collision_proof = self.add_margin(obstacles, margin)
 
         
     def init_grid(self):
-        size = (self.max, self.max)
-        grid = np.zeros(size, dtype=int)
+        Ar = ArucoMarker((marker_id) for marker_id in range(1, 6)) 
+        # size = (self.max, self.max)
+        # grid = np.zeros(size, dtype=int)
+        grid = Ar.Map_indices
+        return(grid)
         # for k in range(len(obstacles)):
         #     obsta = obstacles[k]
         #     beginning = obsta[0]
@@ -63,8 +67,8 @@ class Map:
     def __len__(self):
         return(len(self.grid))
     
-    def get_map(self):
-        return(self.collision_proof)
+    # def get_map(self):
+    #     return(self.collision_proof)
     
     def getElement(self, i, j):
         return self.grid[i][j]
@@ -80,23 +84,25 @@ class Map:
         plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
-def get_path(robot, goal, obstacles):
+def get_path(robot, goal):
     #dots = [(2, 3)]
     #goal = (17, 46)
     #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
-    margin = 3
-    maze = Map(np.array(obstacles), margin)
-    path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
-    maze.plot_map(path)
+    # margin = 3
+    # maze = Map(np.array(obstacles), margin)
+    maze = Map()
+    path = a.astar(maze.init_grid(), tuple(robot), tuple(goal))
+    # maze.plot_map(path)
     return(path)
 
-def main():
-    robot = np.array([2, 3])
-    goal = np.array([40, 30])
-    obstacles = np.array([[[5,15],[10,30]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
-    weg = get_path(robot, goal, obstacles)
-    print(weg)
-    return()
+# def main():
 
-if __name__ == "__main__":
-    main()
+    # robot = np.array([2, 3])
+    # goal = np.array([40, 30])
+    # obstacles = np.array([[[5,15],[10,30]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
+    # weg = get_path(robot, goal)
+    # print(weg)
+    # return()
+
+# if __name__ == "__main__":
+#     main()

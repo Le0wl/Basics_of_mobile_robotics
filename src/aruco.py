@@ -243,8 +243,13 @@ class ArucoMarker:
         
         self.Map_indices = matrix
         #print("MAP: ",Map_indices)
-        
 
+"""
+def display_trajectory(frame, trajectory):
+    for i in range(len(trajectory) - 1):
+        cv2.line(frame, tuple(trajectory[i]), tuple(trajectory[i + 1]), (0, 0, 255), 2)
+    return frame
+"""
 
 
 def main_aruco(*markers):
@@ -267,7 +272,7 @@ def main_aruco(*markers):
             #print(f"Marker ID: {marker.marker_id}, Angle: {marker.angle:.2f}")
         frame = marker.detect_red_objects(frame)  # Create a copy to preserve the original frame
         frame = marker.detect_goal(frame)
-
+        #frame = display_trajectory(frame, path)
         
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)
