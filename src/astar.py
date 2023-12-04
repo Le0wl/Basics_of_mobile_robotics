@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import pathfinding as pf
+# import pathfinding as pf
 from matplotlib import colors
 # the following code is from https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 
@@ -59,6 +59,9 @@ def astar(maze, start, end):
                 path.append(current.position)
                 current = current.parent
             return path[::-1] # Return reversed path
+
+        # else:
+            return ("Path not found")
 
         # Generate children
         children = []

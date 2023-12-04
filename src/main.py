@@ -34,6 +34,7 @@ aruco_detect = threading.Thread(target=main_aruco, args=(*markers,))
 # Create a thread for the robot
 robot_th = threading.Thread(target=robot.run_robot, args=(markers[0].pos,markers[0].angle,))
 
+
 aruco_detect.start()
 robot_th.start()
 
@@ -75,21 +76,35 @@ def update_main():
            
     aruco.set_map(map_base.map)
 
-    goal_i = markers[3].goal_idx[0]
-    goal_j = markers[3].goal_idx[1]
+    #goal_i = markers[3].goal_idx[0]
+    #goal_j = markers[3].goal_idx[1]
 
+    
 #============================= GOAL GENERATION ======================================================
 
-    if np.linalg.norm(robot.trajectory - robot.pos) < 15:
-        goal_i = random.randint(0,UNIT_NUMBER-1)
-        goal_j = random.randint(0,UNIT_NUMBER-1)
+    #if np.linalg.norm(robot.trajectory - robot.pos) < 15:
+        #goal_i = random.randint(0,UNIT_NUMBER-1)
+        #goal_j = random.randint(0,UNIT_NUMBER-1)
 
-    markers[3].goal_idx = [goal_i,goal_j]
+    #markers[3].goal_idx = [goal_i,goal_j]
     #robot.trajectory = np.array(map_base.map[goal_i,goal_j])
     
-    robot.trajectory = markers[4].centroid_goal
+    #robot.trajectory = markers[4].centroid_goal
     #print("GOAL5: ",robot.trajectory)
+
+    goal_idx = markers[4].goal_idx
+    print("Goal:", goal_idx)
+    rob_idx = markers[3].robot_idx
+    print("Robot:", rob_idx)
+
     
+    path = get_path( rob_idx, goal_idx)
+    print(path)
+
+    robot.trajectory = path[0]
+
+    # if robot.trajectory.size < 2 and len(path) !=0:
+    #     path = path.pop()  
 
 #============================= ANGLE CALCULATION ====================================================
     angle =np.rad2deg(np.arctan2(-robot.trajectory[1] + robot.pos[1],robot.trajectory[0] - robot.pos[0])) + 180

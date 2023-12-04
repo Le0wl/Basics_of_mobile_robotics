@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 import astar as a
 from constants import *
+from aruco import*
 
 class Map:
     def __init__(self):
@@ -90,7 +91,7 @@ class Map:
         return(len(self.grid))
     
     def get_map(self):
-        return(self.with_margin)
+        return(self.collision_proof)
     
     def getElement(self, i, j):
         return self.grid[i][j]
@@ -106,38 +107,23 @@ class Map:
         plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
-def get_path(robot, goal, matirx):
+def get_path(robot, goal, obstacles):
     #dots = [(2, 3)]
     #goal = (17, 46)
     #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
     margin = 3
-    maze = Map()
-    maze.update_map(matirx)
+    maze = Map(np.array(obstacles), margin)
     path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
     maze.plot_map(path)
     return(path)
-
-def make_matirx (obstacles):
-        size = (UNIT_NUMBER, UNIT_NUMBER)
-        grid = np.zeros(size, dtype=int)
-        for k in range(len(obstacles)):
-            obsta = obstacles[k]
-            beginning = obsta[0]
-            end = obsta[1]
-            hight,width = end[0]-beginning[0],end[1]-beginning[1]
-            for i in range(hight):
-                for j in range(width):
-                    grid[beginning[0] + i][beginning[1]+ j] = 1
-        return grid
 
 def main():
     robot = np.array([2, 3])
     goal = np.array([40, 30])
     obstacles = np.array([[[5,15],[10,30]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
-    matrix = make_matirx(obstacles)
-    weg = get_path(robot, goal, matrix)
+    weg = get_path(robot, goal, obstacles)
     print(weg)
     return()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
