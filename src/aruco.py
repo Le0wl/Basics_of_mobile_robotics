@@ -204,7 +204,7 @@ class ArucoMarker:
                         matrix[j][k] = OBSTACLE
                         #print("OBSTACLE: ",j,k)
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 0, 255), -1)
-        print("NUM OBSTACLES: ",self.nb_obstacles)
+        # print("NUM OBSTACLES: ",self.nb_obstacles)
                         
 
         # Set to 2 the unit where the goal is

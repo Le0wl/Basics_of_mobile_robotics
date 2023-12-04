@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 import astar as a
 from constants import *
+from aruco import*
 
 class Map:
     def __init__(self):
@@ -13,8 +14,11 @@ class Map:
 
         
     def init_grid(self):
-        size = (self.max, self.max)
-        grid = np.zeros(size, dtype=int)
+        Ar = ArucoMarker((marker_id) for marker_id in range(1, 6)) 
+        # size = (self.max, self.max)
+        # grid = np.zeros(size, dtype=int)
+        grid = Ar.Map_indices
+        return(grid)
         # for k in range(len(obstacles)):
         #     obsta = obstacles[k]
         #     beginning = obsta[0]
@@ -80,22 +84,24 @@ class Map:
         plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
-def get_path(map, robot, goal):
+def get_path(robot, goal):
     #dots = [(2, 3)]
     #goal = (17, 46)
     #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
     # margin = 3
     # maze = Map(np.array(obstacles), margin)
-    # maze = Map()
-    path = a.astar(map, tuple(robot), tuple(goal))
+    maze = Map()
+    path = a.astar(maze.init_grid(), tuple(robot), tuple(goal))
     # maze.plot_map(path)
     return(path)
 
 def main():
+    mat =Map()
+    map = mat.init_grid()
     robot = np.array([2, 3])
     goal = np.array([40, 30])
-    obstacles = np.array([[[5,15],[10,30]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
-    weg = get_path(robot, goal, obstacles)
+    # obstacles = np.array([[[5,15],[10,30]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
+    weg = get_path(map, robot, goal)
     print(weg)
     return()
 

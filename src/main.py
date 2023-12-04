@@ -96,10 +96,11 @@ def update_main():
     print("Goal:", goal_idx)
     rob_idx = markers[3].robot_idx
     print("Robot:", rob_idx)
-    matrix = markers[4].Map_indices
+
+  
     
 
-    path = get_path(matrix, rob_idx, goal_idx)
+    path = get_path( rob_idx, goal_idx)
     print(path)
 
     robot.trajectory = path[0]
