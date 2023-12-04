@@ -97,9 +97,7 @@ def update_main():
     rob_idx = markers[3].robot_idx
     print("Robot:", rob_idx)
 
-  
     
-
     path = get_path( rob_idx, goal_idx)
     print(path)
 

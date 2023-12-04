@@ -95,15 +95,14 @@ def get_path(robot, goal):
     # maze.plot_map(path)
     return(path)
 
-def main():
-    mat =Map()
-    map = mat.init_grid()
-    robot = np.array([2, 3])
-    goal = np.array([40, 30])
-    # obstacles = np.array([[[5,15],[10,30]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
-    weg = get_path(map, robot, goal)
-    print(weg)
-    return()
+# def main():
 
-if __name__ == "__main__":
-    main()
+    # robot = np.array([2, 3])
+    # goal = np.array([40, 30])
+    # obstacles = np.array([[[5,15],[10,30]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
+    # weg = get_path(robot, goal)
+    # print(weg)
+    # return()
+
+# if __name__ == "__main__":
+#     main()
