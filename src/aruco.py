@@ -285,7 +285,9 @@ def main_aruco(*markers):
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)
         #marker.update_map_matrix(frame)
-
+        print(markers[4].Map_indices)
+        time.sleep(0.5)
+        print("\033")
 
         cv2.imshow('Markers Detection', frame)
 
@@ -298,3 +300,4 @@ def main_aruco(*markers):
 def set_map(map):
     global Map_camera
     Map_camera = map
+

@@ -5,6 +5,7 @@ from matplotlib import colors
 import astar as a
 from constants import *
 from aruco import*
+import time
 
 class Map:
     def __init__(self):
@@ -91,6 +92,9 @@ def get_path(robot, goal):
     # margin = 3
     # maze = Map(np.array(obstacles), margin)
     maze = Map()
+    #print how many 1 in the matrix
+    #print(np.count_nonzero(maze.grid == 1))
+    
     path = a.astar(maze.init_grid(), tuple(robot), tuple(goal))
     # maze.plot_map(path)
     return(path)
