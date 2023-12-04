@@ -60,6 +60,9 @@ def astar(maze, start, end):
                 current = current.parent
             return path[::-1] # Return reversed path
 
+        else:
+            return ("Path not found")
+
         # Generate children
         children = []
         for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]: # Adjacent squares

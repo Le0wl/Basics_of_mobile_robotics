@@ -8,8 +8,8 @@ from constants import *
 class Map:
     def __init__(self):
         self.max = UNIT_NUMBER
-        self.grid = self.init_grid(obstacles)
-        self.collision_proof = self.add_margin(obstacles, margin)
+        self.grid = self.init_grid()
+        # self.collision_proof = self.add_margin(obstacles, margin)
 
         
     def init_grid(self):
@@ -63,8 +63,8 @@ class Map:
     def __len__(self):
         return(len(self.grid))
     
-    def get_map(self):
-        return(self.collision_proof)
+    # def get_map(self):
+    #     return(self.collision_proof)
     
     def getElement(self, i, j):
         return self.grid[i][j]
@@ -80,14 +80,15 @@ class Map:
         plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
-def get_path(robot, goal, obstacles):
+def get_path(map, robot, goal):
     #dots = [(2, 3)]
     #goal = (17, 46)
     #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
-    margin = 3
-    maze = Map(np.array(obstacles), margin)
-    path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
-    maze.plot_map(path)
+    # margin = 3
+    # maze = Map(np.array(obstacles), margin)
+    # maze = Map()
+    path = a.astar(map, tuple(robot), tuple(goal))
+    # maze.plot_map(path)
     return(path)
 
 def main():
