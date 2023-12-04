@@ -223,7 +223,7 @@ class ArucoMarker:
                 for k in range(UNIT_NUMBER):
                     if self.pos[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.pos[0] + PIXEL_MARGIN and self.pos[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.pos[1] + PIXEL_MARGIN:
                         #matrix[j][k] = ROBOT
-                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (255, 0, 0), -1)
                         self.robot_idx = np.array([j, k])
                         #print("ROBOT: ",j,k)
                         break
