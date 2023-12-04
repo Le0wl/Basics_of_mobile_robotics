@@ -26,7 +26,7 @@ class ArucoMarker:
         self.robot_idx = np.array([0, 0])
         self.goal_idx = np.array([0, 0])
         self.Map_indices = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
-
+        self.start_time = time.time()
 
 
         self.num_frames_average_red = 30   # Adjust this value
@@ -70,6 +70,7 @@ class ArucoMarker:
             angle = np.arctan2(axis_points[0].ravel()[0] - axis_points[1].ravel()[0], axis_points[0].ravel()[1] - axis_points[1].ravel()[1])
             angle = np.degrees(angle) + 90
             self.pos = axis_points[0].ravel()
+            frame = cv2.circle(frame, tuple(self.pos), 3, (0, 255, 0), -1)
             # angle goes from 0 to 270 ang 0 to -90
             if(angle > 180):
                 angle = angle - 360
@@ -92,7 +93,7 @@ class ArucoMarker:
                 for i in range(UNIT_NUMBER):
                     for j in range(UNIT_NUMBER):
                         unit_pos = np.array([Map_camera[i][j][0], Map_camera[i][j][1]]) 
-
+                        frame = cv2.circle(frame, (int(unit_pos[0]),int(unit_pos[1])), 1, (0, 255, 0), -1)
                         # Ensure unit_pos contains integer values and convert to tuple
                         unit_pos = tuple(map(int, unit_pos))
 
@@ -106,7 +107,6 @@ class ArucoMarker:
                             #frame = cv2.circle(frame, (340,100), 1, (0, 255, 0), -1)
                             #print("UNIT: ",unit_pos)
                             """
-        
 
         return frame
     
@@ -116,8 +116,20 @@ class ArucoMarker:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         
         # Define the lower and upper bounds for the red color in HSV
-        lower_red = np.array([2, 15, 15])
-        upper_red = np.array([15, 230, 255])
+        #lower_red = np.array([0, 100, 100])
+        #upper_red = np.array([15, 255, 255])
+        #for low light conditions
+        #lower_red = np.array([1, 5, 5])
+        #upper_red = np.array([18, 255, 255])
+        # to be more sensitive to red and yellow
+        #lower_red = np.array([1, 1, 1])
+        #upper_red = np.array([12, 255, 255])
+        #detect black
+        lower_red = np.array([0, 50, 50])
+        upper_red = np.array([250, 255, 255])
+        
+            
+
 
         # Create a mask to isolate red regions in the image
         mask = cv2.inRange(hsv, lower_red, upper_red)
@@ -204,7 +216,7 @@ class ArucoMarker:
                         matrix[j][k] = OBSTACLE
                         #print("OBSTACLE: ",j,k)
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 0, 255), -1)
-        print("NUM OBSTACLES: ",self.nb_obstacles)
+        #print("NUM OBSTACLES: ",self.nb_obstacles)
                         
 
         # Set to 2 the unit where the goal is
@@ -257,9 +269,10 @@ def main_aruco(*markers):
         frame = marker.detect_goal(frame)
 
         
-        #markers[0].update_map_matrix(frame)
-        #markers[4].update_map_matrix(frame)
-        marker.update_map_matrix(frame)
+        markers[0].update_map_matrix(frame)
+        markers[4].update_map_matrix(frame)
+        #marker.update_map_matrix(frame)
+
 
         cv2.imshow('Markers Detection', frame)
 

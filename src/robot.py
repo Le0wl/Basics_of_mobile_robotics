@@ -24,7 +24,7 @@ class robot:
         self.state = 'FORWARD'  # state of the robot
         #CRUISING_SPEED = int(np.abs(2*np.rad2deg(np.arctan2(self.trajectory[1] - self.pos[1],self.trajectory[0] - self.pos[0]))/1.5) + 50)
         CRUISING_SPEED = 200 
-        SPEED_LEFT = int(CRUISING_SPEED + angle/5)
+        SPEED_LEFT = int(CRUISING_SPEED+ angle/5)
         SPEED_RIGHT = int(CRUISING_SPEED - angle/5)
         self.v = {"motor.left.target": [SPEED_LEFT],
              "motor.right.target": [SPEED_RIGHT],}

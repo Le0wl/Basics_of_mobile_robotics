@@ -63,7 +63,7 @@ def update_main():
     # get size of marker
 
  #============================= MAP GENERATION ======================================================
-    ratio = 0.1
+    ratio = 1.2
 
     for i in range(UNIT_NUMBER):
         for j in range(UNIT_NUMBER):
@@ -75,20 +75,20 @@ def update_main():
            
     aruco.set_map(map_base.map)
 
-    #goal_i = markers[3].goal_idx[0]
-    #goal_j = markers[3].goal_idx[1]
+    goal_i = markers[3].goal_idx[0]
+    goal_j = markers[3].goal_idx[1]
 
     
 #============================= GOAL GENERATION ======================================================
 
-    #if np.linalg.norm(robot.trajectory - robot.pos) < 15:
-        #goal_i = random.randint(0,UNIT_NUMBER-1)
-        #goal_j = random.randint(0,UNIT_NUMBER-1)
+    if np.linalg.norm(robot.trajectory - robot.pos) < 15:
+        goal_i = random.randint(0,UNIT_NUMBER-1)
+        goal_j = random.randint(0,UNIT_NUMBER-1)
 
-    #markers[3].goal_idx = [goal_i,goal_j]
-    #robot.trajectory = np.array(map_base.map[goal_i,goal_j])
+    markers[3].goal_idx = [goal_i,goal_j]
+    robot.trajectory = np.array(map_base.map[goal_i,goal_j])
     
-    #robot.trajectory = markers[4].centroid_goal
+    robot.trajectory = markers[4].centroid_goal
     #print("GOAL5: ",robot.trajectory)
     
 
