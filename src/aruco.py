@@ -42,6 +42,8 @@ class ArucoMarker:
         self.centroid_goal = np.array([0,0])
         self.nb_obstacles = 0
 
+        self.path = []
+
     def update_marker(self, frame):
         #Placeholder camera parameters
         focal_length = 1000  # Example focal length (adjust as needed)
@@ -244,12 +246,18 @@ class ArucoMarker:
         self.Map_indices = matrix
         #print("MAP: ",Map_indices)
 
-"""
+
 def display_trajectory(frame, trajectory):
     for i in range(len(trajectory) - 1):
-        cv2.line(frame, tuple(trajectory[i]), tuple(trajectory[i + 1]), (0, 0, 255), 2)
+        #take coordinates from map_camera with trajectory indices
+        x1 = Map_camera[trajectory[i][0]][trajectory[i][1]][0]
+        y1 = Map_camera[trajectory[i][0]][trajectory[i][1]][1]
+        x2 = Map_camera[trajectory[i+1][0]][trajectory[i+1][1]][0]
+        y2 = Map_camera[trajectory[i+1][0]][trajectory[i+1][1]][1]
+        #print("x1: ",x1,"y1: ",y1,"x2: ",x2,"y2: ",y2)
+        frame = cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), (0, 0, 255), 2)
     return frame
-"""
+
 
 
 def main_aruco(*markers):
@@ -272,7 +280,7 @@ def main_aruco(*markers):
             #print(f"Marker ID: {marker.marker_id}, Angle: {marker.angle:.2f}")
         frame = marker.detect_red_objects(frame)  # Create a copy to preserve the original frame
         frame = marker.detect_goal(frame)
-        #frame = display_trajectory(frame, path)
+        frame = display_trajectory(frame, markers[4].path)
         
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)

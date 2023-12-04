@@ -26,11 +26,11 @@ robot = robot()
 
 
 
-#path = []
+
 markers = [ArucoMarker(marker_id) for marker_id in range(1, 6)]  # Create instances for each ArUco marker
 
 # Create a thread for the ArUco marker detection
-aruco_detect = threading.Thread(target=main_aruco, args=(*markers,))#path))
+aruco_detect = threading.Thread(target=main_aruco, args=(*markers,))
 # Create a thread for the robot
 robot_th = threading.Thread(target=robot.run_robot, args=(markers[0].pos,markers[0].angle,))
 
@@ -64,7 +64,7 @@ def update_main():
     # get size of marker
 
  #============================= MAP GENERATION ======================================================
-    ratio = 1.2
+    ratio = 0.1
 
     for i in range(UNIT_NUMBER):
         for j in range(UNIT_NUMBER):
@@ -76,30 +76,31 @@ def update_main():
            
     aruco.set_map(map_base.map)
 
-    goal_i = markers[3].goal_idx[0]
-    goal_j = markers[3].goal_idx[1]
+    #goal_i = markers[3].goal_idx[0]
+    #goal_j = markers[3].goal_idx[1]
 
     
 #============================= GOAL GENERATION ======================================================
 
-    if np.linalg.norm(robot.trajectory - robot.pos) < 15:
-        goal_i = random.randint(0,UNIT_NUMBER-1)
-        goal_j = random.randint(0,UNIT_NUMBER-1)
+    #if np.linalg.norm(robot.trajectory - robot.pos) < 15:
+        #goal_i = random.randint(0,UNIT_NUMBER-1)
+        #goal_j = random.randint(0,UNIT_NUMBER-1)
 
-    markers[3].goal_idx = [goal_i,goal_j]
-    robot.trajectory = np.array(map_base.map[goal_i,goal_j])
+    #markers[3].goal_idx = [goal_i,goal_j]
+    #robot.trajectory = np.array(map_base.map[goal_i,goal_j])
     
-    robot.trajectory = markers[4].centroid_goal
+    #robot.trajectory = markers[4].centroid_goal
     #print("GOAL5: ",robot.trajectory)
 
     goal_idx = markers[4].goal_idx
-    print("Goal:", goal_idx)
+    #print("Goal:", goal_idx)
     rob_idx = markers[0].robot_idx
-    print("Robot:", rob_idx)
+    #print("Robot:", rob_idx)
 
     
     path = get_path( rob_idx, goal_idx)
-    print(path)
+    #print(path)
+    markers[4].path = path
 
     robot.trajectory = path[0]
 

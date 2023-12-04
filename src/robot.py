@@ -96,7 +96,7 @@ class robot:
                 
                 #self.state = 'fake'
                 #break
-            if self.trajectory.size < 1:
+            if False: #self.trajectory.size < 1:
                 self.stop()
                 #print('Goal reached')
                 self.state = 'FINISH'
