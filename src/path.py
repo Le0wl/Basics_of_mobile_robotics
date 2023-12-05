@@ -155,27 +155,26 @@ def is_obstacle_between(point1, point2, maze):
 
     return False  # The path is clear
 
-def get_path(robot, goal, obstacles):
-    matrix = make_matrix(obstacles)
+def get_path(robot, goal, matrix):
     maze = Map()
     maze.update_map(matrix)
-    # maze.plot_map(((0,0),(1,1)))
     path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
     if type(path) is str:
         print(path)
         return(0)
-    # maze.plot_map(path)
     path = smooth_path(path, maze.get_map())
     print(path)
     maze.plot_map(path)
     return(path)
 
 def main():
+    #making a test map when the camera is not around
     robot = np.array([0, 0])
     goal = np.array([45, 30])
     obstacles = np.array([[[5,15],[10,20]],[[36,6],[40,22]],[[16,15],[20,20]], [[30,30],[40,45]]]) 
-    get_path(robot, goal, obstacles) 
-    # print(weg)
+    matrix = make_matrix(obstacles)
+
+    get_path(robot, goal, matrix) 
     return()
 
 if __name__ == "__main__":
