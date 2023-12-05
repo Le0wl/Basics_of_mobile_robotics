@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 import astar as a
 from constants import *
-from aruco import*
+#from aruco import*
+import time
 
 class Map:
     def __init__(self):
@@ -15,8 +16,10 @@ class Map:
 
         
     def init_grid(self):
+        # Ar = ArucoMarker((marker_id) for marker_id in range(1, 6)) 
         size = (self.max, self.max)
         grid = np.zeros(size, dtype=int)
+        # grid = Ar.Map_indices
         return(grid)
     
     def update_map(self, matrix):
@@ -140,7 +143,7 @@ def main():
     #making a test map when the camera is not around
     robot = np.array([30, 0])
     goal = np.array([45, 30])
-    obstacles = np.array([[[5,15],[10,20]],[[36,6],[40,22]],[[16,15],[20,20]], [[30,30],[40,45]]]) 
+    obstacles = np.array([[[5,15],[10,20]],[[16,6],[40,22]],[[16,15],[20,20]], [[30,30],[40,45]]]) 
     matrix = make_matrix(obstacles)
     
     get_path(robot, goal, matrix) 

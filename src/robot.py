@@ -24,15 +24,15 @@ class robot:
         self.state = 'FORWARD'  # state of the robot
         #CRUISING_SPEED = int(np.abs(2*np.rad2deg(np.arctan2(self.trajectory[1] - self.pos[1],self.trajectory[0] - self.pos[0]))/1.5) + 50)
         CRUISING_SPEED = 200 
-        SPEED_LEFT = int(CRUISING_SPEED + angle/5)
-        SPEED_RIGHT = int(CRUISING_SPEED - angle/5)
+        SPEED_LEFT = int(CRUISING_SPEED+ angle*5)
+        SPEED_RIGHT = int(CRUISING_SPEED - angle*5)
         self.v = {"motor.left.target": [SPEED_LEFT],
              "motor.right.target": [SPEED_RIGHT],}
                
 
     def turn(self,speed,angle):
         self.state = 'TURN'     # state of the robot
-        TURNING_SPEED = int(abs(self.teta/1.2) +10)
+        TURNING_SPEED = int(abs(self.teta/1.8) +10)
         
         if(angle < 0):
             self.v = {"motor.left.target": [-TURNING_SPEED],
@@ -79,15 +79,21 @@ class robot:
                 #print("teta:  ",self.teta)
             #print("DISTANCE: ",np.linalg.norm(next_goal - self.pos))
             #print(np.linalg.norm(self.trajectory - self.pos))
-            if np.abs(self.teta) > 5:
-                self.turn(0,self.teta)
-                self.state = 'TURN'
-                #print("PHI: ",self.phi, "TETA: ",self.teta)
-                #print('Turning')
-            else:
-                self.go_forward(self.teta)
-                self.state = 'FORWARD'
+            if self.state != 'FINISH':
+            
+                if np.abs(self.teta) > 15:
+                    self.turn(0,self.teta)
+                    self.state = 'TURN'
+                    #print("PHI: ",self.phi, "TETA: ",self.teta)
+                    #print('Turning')
+                else:
+                    self.go_forward(self.teta)
+                    self.state = 'FORWARD'
                 #print('Going forward')
+            else:
+                self.stop()
+                #print('Goal reached')
+                break
 
             #if np.linalg.norm(self.trajectory - self.pos) < 10:
                 #go to next trajectory point
@@ -96,7 +102,7 @@ class robot:
                 
                 #self.state = 'fake'
                 #break
-            if self.trajectory.size < 1:
+            if False: #self.trajectory.size < 1:
                 self.stop()
                 #print('Goal reached')
                 self.state = 'FINISH'
