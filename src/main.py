@@ -64,7 +64,7 @@ def update_main():
     # get size of marker
 
  #============================= MAP GENERATION ======================================================
-    ratio = 0.1
+    ratio = 1.2
 
     for i in range(UNIT_NUMBER):
         for j in range(UNIT_NUMBER):
@@ -97,13 +97,21 @@ def update_main():
     rob_idx = markers[0].robot_idx
     #print("Robot:", rob_idx)
 
-    
-    path = get_path( rob_idx, goal_idx)
+    mat = Map()
+    mat.grid = markers[4].Map_indices
+    #print("GRID: ",mat.grid)
+    #time.sleep(0.4)
+    #clr terminal
+    #print("\033c")
+    path = get_path(mat.grid,rob_idx, goal_idx)
+    #print("PATH: ",path)
     #print(path)
     markers[4].path = path
-
-    robot.trajectory = path[0]
-
+    if len(path) != 0:
+        robot.trajectory = aruco.Map_camera[path[0][0]][path[0][1]]
+    else:
+        robot.state = 'FINISH'
+        #print("GOAL: ",aruco.Map_camera[path[0][0]][path[0][1]])
     # if robot.trajectory.size < 2 and len(path) !=0:
     #     path = path.pop()  
 

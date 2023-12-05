@@ -85,7 +85,7 @@ class Map:
         plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
-def get_path(robot, goal):
+def get_path(map,robot, goal):
     #dots = [(2, 3)]
     #goal = (17, 46)
     #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
@@ -95,8 +95,14 @@ def get_path(robot, goal):
     #print how many 1 in the matrix
     #print(np.count_nonzero(maze.grid == 1))
     
-    path = a.astar(maze.init_grid(), tuple(robot), tuple(goal))
+    path = a.astar(map, tuple(robot), tuple(goal))
+    #remove the first element of the path
+    if len(path) != 0:
+        path.pop(0)
     # maze.plot_map(path)
+    #print(map)
+    #time.sleep(0.5)
+    #print("\033")
     return(path)
 
 # def main():

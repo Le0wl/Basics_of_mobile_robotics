@@ -30,7 +30,7 @@ class ArucoMarker:
 
 
         self.num_frames_average_red = 30   # Adjust this value
-        self.max_tracked_objects_red = 2   # Adjust this value
+        self.max_tracked_objects_red = 10   # Adjust this value
         self.red_avg_count = 0
         self.avg_cx_red = [0] * self.max_tracked_objects_red
         self.avg_cy_red = [0] * self.max_tracked_objects_red
@@ -118,17 +118,15 @@ class ArucoMarker:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         
         # Define the lower and upper bounds for the red color in HSV
-        #lower_red = np.array([0, 100, 100])
-        #upper_red = np.array([15, 255, 255])
+        lower_red = np.array([0, 100, 100])
+        upper_red = np.array([10, 255, 255])
         #for low light conditions
-        #lower_red = np.array([1, 5, 5])
-        #upper_red = np.array([18, 255, 255])
-        # to be more sensitive to red and yellow
-        #lower_red = np.array([1, 1, 1])
-        #upper_red = np.array([12, 255, 255])
-        #detect black
-        lower_red = np.array([0, 50, 50])
-        upper_red = np.array([250, 255, 255])
+        #lower_red = np.array([0, 50, 50])
+        #upper_red = np.array([10, 255, 255])
+        #pwhite ish red
+        #lower_red = np.array([0, 100, 100])
+        #upper_red = np.array([10, 255, 255])
+        
         
             
 
@@ -155,6 +153,7 @@ class ArucoMarker:
                     self.detected_obstacles.append({'top_left': top_left, 'bottom_right': bottom_right})
                     # Draw contours around the detected objects on the frame
                     cv2.rectangle(frame, top_left, bottom_right, (0, 0, 200), 2)
+                    #print("NUM OBSTACLES: ",self.nb_obstacles)
 
         self.nb_obstacles = len(self.detected_obstacles)
 
@@ -178,7 +177,7 @@ class ArucoMarker:
 
         # Find contours of blue objects
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+        self.detected_goal = []
         # Loop through the contours to find the bounding boxes of blue objects
         for contour in contours:
             area = cv2.contourArea(contour)
@@ -207,6 +206,8 @@ class ArucoMarker:
         # Matrix representing if unit is obstacle, goal , robot or free
         matrix = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
 
+        OBSTACLE_MARGIN = 32
+
         # Set to 1 the units where the obstacles are
         for i in range(self.nb_obstacles):
             top_left = self.detected_obstacles[i]['top_left']
@@ -214,8 +215,8 @@ class ArucoMarker:
 
             for j in range(UNIT_NUMBER):
                 for k in range(UNIT_NUMBER):
-                    if top_left[0] < Map_camera[j][k][0] < bottom_right[0] and top_left[1] < Map_camera[j][k][1] < bottom_right[1]:
-                        matrix[j][k] = OBSTACLE
+                    if top_left[0] - OBSTACLE_MARGIN < Map_camera[j][k][0] < bottom_right[0] + OBSTACLE_MARGIN and top_left[1] - OBSTACLE_MARGIN < Map_camera[j][k][1] < bottom_right[1] + OBSTACLE_MARGIN:
+                        matrix[UNIT_NUMBER-k-1][j] = OBSTACLE
                         #print("OBSTACLE: ",j,k)
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 0, 255), -1)
         #print("NUM OBSTACLES: ",self.nb_obstacles)
@@ -225,7 +226,7 @@ class ArucoMarker:
         for j in range(UNIT_NUMBER):
             for k in range(UNIT_NUMBER):
                 if self.centroid_goal[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.centroid_goal[0] + PIXEL_MARGIN and self.centroid_goal[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.centroid_goal[1] + PIXEL_MARGIN:
-                    #matrix[j][k] = GOAL
+                    matrix[j][k] = GOAL
                     #print("GOAL: ",j,k)
                     frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
                     self.goal_idx = np.array([j, k])
@@ -236,7 +237,7 @@ class ArucoMarker:
             for j in range(UNIT_NUMBER):
                 for k in range(UNIT_NUMBER):
                     if self.pos[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.pos[0] + PIXEL_MARGIN and self.pos[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.pos[1] + PIXEL_MARGIN:
-                        #matrix[j][k] = ROBOT
+                        matrix[j][k] = ROBOT
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (255, 0, 0), -1)
                         self.robot_idx = np.array([j, k])
                         #print("ROBOT: ",j,k)
@@ -285,9 +286,10 @@ def main_aruco(*markers):
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)
         #marker.update_map_matrix(frame)
-        print(markers[4].Map_indices)
-        time.sleep(0.5)
-        print("\033")
+
+        #print(markers[4].Map_indices)
+        #time.sleep(0.5)
+        #print("\033")
 
         cv2.imshow('Markers Detection', frame)
 
