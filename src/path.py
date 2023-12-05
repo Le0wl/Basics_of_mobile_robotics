@@ -27,13 +27,23 @@ class Map:
         self.with_margin = matrix.copy()
         self.add_margin()  
 
+    def is_out_of_bounds(self, x, y):
+        if x < 0 or x >= self.max or y < 0 or y >= self.max:
+            return True
+        else:
+            return False
+
     def other_corner(self, i,j):
         while self.grid[i][j]==1:
+            if self.is_out_of_bounds(i,j):
+                break
             i += 1
         i -=1
         while self.grid[i][j]==1:
+            if self.is_out_of_bounds(i,j):
+                break
             j += 1
-        j-=1
+        j -=1
         return (i,j)
         
     def add_margin(self):
@@ -44,14 +54,14 @@ class Map:
                 if self.grid[i][j]==1 and self.grid[i][j-1] == 0 and self.grid[i-1][j] == 0 :
                     end = self.other_corner(i,j)
                     # print(end)
-                    hight,width = end[0]-i+2*margin, end[1]-j+2*margin
-                    if margin <= i < self.max-margin and margin <= j < self.max-margin:
-                        for di in range(hight):
-                            for dj in range(width):
-                                if self.grid[i-margin + di][j - margin + dj] ==1:
-                                    continue
-                                with_margin[i-margin + di][j - margin + dj] = 2
-
+                    hight,width = end[0]-i, end[1]-j
+                    for di in range(hight+2*margin+1):
+                        for dj in range(width+2*margin+1):
+                            if self.is_out_of_bounds(i-margin + di,j - margin + dj):
+                                continue
+                            if self.grid[i-margin + di][j - margin + dj] ==1:
+                                continue
+                            with_margin[i-margin + di][j - margin + dj] = 2
 
     
     def __len__(self):
@@ -144,8 +154,8 @@ def get_path(robot, goal, matrix):
 def main():
     #making a test map when the camera is not around
     robot = np.array([1, 0])
-    goal = np.array([10, 15])
-    obstacles = np.array([[[0,5],[10,10]],[[16,15],[19,19]]]) 
+    goal = np.array([15, 25])
+    obstacles = np.array([[[0,5],[10,10]],[[17,15],[19,19]]]) 
     matrix = make_matrix(obstacles)
     
     get_path(robot, goal, matrix) 
