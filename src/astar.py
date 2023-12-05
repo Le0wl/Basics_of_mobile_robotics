@@ -26,15 +26,16 @@ class Node():
 def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
     
-    maze = [row[::-1] for row in maze_1]
-    #maze = [col[-1::] for col in maze]
-    #exchange lines and columns
-    #maze = np.transpose(maze_1)
-    #flip matrix 90 degrees clockwise
-    #maze = np.rot90(maze_1, k=1, axes=(0, 1))
-    #flip matrix 90 degrees counter-clockwise
-    maze = np.rot90(maze_1, k=3, axes=(0, 1))
-
+    # maze = [row[::-1] for row in maze_1]
+    # #maze = [col[-1::] for col in maze]
+    # #exchange lines and columns
+    # #maze = np.transpose(maze_1)
+    # #flip matrix 90 degrees clockwise
+    # #maze = np.rot90(maze_1, k=1, axes=(0, 1))
+    # #flip matrix 90 degrees counter-clockwise
+    # maze = np.rot90(maze_1, k=3, axes=(0, 1))
+    maze = maze_1
+    # Create start and end node
     start_node = Node(None, start)
     start_node.g = start_node.h = start_node.f = 0
     end_node = Node(None, end)
@@ -49,8 +50,8 @@ def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
     # Initialize both open and closed list
     open_list = []
     closed_list = []
-    path = []
 
+    # Add the start node
     open_list.append(start_node)
 
     # Loop until you find the end
@@ -64,49 +65,52 @@ def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
                 current_node = item
                 current_index = index
 
+        # Pop current off open list, add to closed list
         open_list.pop(current_index)
         closed_list.append(current_node)
-        nodes_expanded += 1
-        
+
+        # Found the goal
         if current_node == end_node:
+            path = []
             current = current_node
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            #print("Path found!")
-            return path[::-1]
-
-        #if len(open_list) > MAX_LIST_SIZE or len(closed_list) > MAX_LIST_SIZE:
-            #open_list = []
-            #closed_list = []
+            return path[::-1] # Return reversed path
 
         #else:
             #return ("Path not found")
-        if iteration > 5000:
+        if iteration > 1000:
             return("fuck got suck in a local minima")
 
         # Generate children
         children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]: # Adjacent squares
+
+            # Get node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) - 1) or node_position[1] < 0:
-                continue
-            
-            # Make sure walkable terrain
-            if maze[node_position[0]][node_position[1]] == OBSTACLE:
-                #print(f"Encountered obstacle at {node_position}")
+            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
 
+            # Make sure walkable terrain
+            if maze[node_position[0]][node_position[1]] != 0:
+                continue
+
+            # Create new node
             new_node = Node(current_node, node_position)
 
-            new_node.g = current_node.g + 1
-            new_node.calculate_heuristic(end_node)
-            new_node.f = new_node.g + new_node.h
+            # Append
+            children.append(new_node)
 
-            if new_node in closed_list:
-                continue
+        # Loop through children
+        for child in children:
+
+            # Child is on the closed list
+            for closed_child in closed_list:
+                if child == closed_child:
+                    continue
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
@@ -126,7 +130,3 @@ def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
             # Add the child to the open list
             open_list.append(child)
     return("path not found")
-
-    #print("Path not found!")
-    #print(f"Nodes expanded: {nodes_expanded}")
-    return path
