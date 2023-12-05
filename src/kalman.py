@@ -4,53 +4,26 @@ import math
 import matplotlib.pyplot as plt
 
 class Kalman:
-    def pos_vel_meas(x_est_prev, P_est_prev, motor_left_speed, motor_right_speed, thymio_angle, thymio_pos):
-        cam_blocked = False
-
-        # Speed of Thymio
-        speed = (motor_left_speed + motor_right_speed) / 2 # Assuming motor_left_speed and motor_right_speed are functions
-
-        # Initialize the X and Y values
-        x_measured = 0
-        y_measured = 0
-        vx_measured = 0
-        vy_measured = 0
-
-        # Update X and Y position using camera info
-        if not cam_blocked:
-            x_measured = thymio_pos[0]
-            y_measured = thymio_pos[1]
-            vx_measured = speed * math.cos(thymio_angle)
-            vy_measured = -speed * math.sin(thymio_angle)
-        else:
-            cam_blocked = True
-
-        # Calculate dvx and dvy
-        x_prev, y_prev, vx_prev, vy_prev = x_est_prev.flatten()
-
-        dvx = speed * math.cos(thymio_angle) - vx_prev
-        dvy = -speed * math.sin(thymio_angle) - vy_prev
-
-        # Kalman filter prediction and update
-        # Assuming x_est_prev and P_est_prev are your previous state estimate and covariance
-        x_est, P_est = kalman_filter(x_measured, y_measured, vx_measured, vy_measured, x_est_prev, P_est_prev, dvx, dvy, cam_blocked)
-
-        return x_est, P_est, cam_blocked
-
     def kalman_filter(x_measured, y_measured, vx_measured, vy_measured, x_est_prev, P_est_prev, dvx=0, dvy=0, cam_blocked = False):
 
         # --------------------Iniitialisation------------------
         # Set the sampling time
-        T_s = 0.1
+        T_s = 0.5
 
         # State transition matrix
-        A = np.array([[1, 0, T_s, 0], [0, 1, 0, T_s], [0, 0, 1, 0], [0, 0, 0, 1]]) 
+        A = np.array([[1, 0, T_s, 0],
+                    [0, 1, 0, T_s],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]])
         # Control matrix
-        B = np.array([[T_s, 0], [0, T_s], [1, 0], [0, 1]])
+        B = np.array([[T_s, 0],
+                    [0, T_s],
+                    [1, 0],
+                    [0, 1]])
         # Measurement matrix that relates to state vector to measurement
         H = np.eye(4)
         # Process noise covariance matrix
-        Q = np.diag([0.1, 0.1, 0.1, 0.1])   # ADJUST ACCORDINGLY
+        Q = np.diag([2, 2, 2, 2])   # ADJUST ACCORDINGLY
 
         # Set R (Measurement noise covariance matrix) to infinity if the camera is blocked
         # Measurement noise covariance matrix
@@ -62,9 +35,10 @@ class Kalman:
 
         # Prediction step
         # Assuming dvx and dvy are control inputs
-        U_in = np.array([[dvx], [dvy]])
+        U_in = np.array([dvx, dvy])
 
         # Prediction step
+        x_est_prev = np.squeeze(x_est_prev)
         x_est_a_priori = np.dot(A, x_est_prev) + np.dot(B, U_in)
         P_est_a_priori = np.dot(A, np.dot(P_est_prev, A.T)) + Q
 
@@ -73,7 +47,14 @@ class Kalman:
         y_measured_pred = np.dot(H, x_est_a_priori)
 
         # Inovation" refers to the difference between the observed (or measured) data and the predicted
-        innovation = y - y_measured_pred
+
+        # Check if the measured values are both 0
+        if x_measured == 0 and y_measured == 0:
+            # If both measured values are 0, set the innovation to 0
+            innovation = np.zeros((4, 1))
+        else:
+            # For non-zero measured values, compute the innovation as usual
+            innovation = y - y_measured_pred
         
         # prediction covariance measurement
         S = np.dot(H, np.dot(P_est_a_priori, H.T)) + R
@@ -85,51 +66,107 @@ class Kalman:
         P_est = P_est_a_priori - np.dot(K, np.dot(H, P_est_a_priori))
 
         return x_est, P_est
-    
-# Initial state estimate
-x_est_prev = np.array([[0], [0], [0], [0]])
-# Initial state covariance matrix
-P_est_prev = np.diag([1.0, 1.0, 1.0, 1.0])
-# Set initial conditions
-x_true = np.array([[0.0], [0.0], [1.0], [0.0]], dtype=float)  # True initial state
-dt = 0.1  # Time step
 
-# Lists to store true and estimated states
-true_states = []
-est_states = []
+    # Initial and final positions
+    start_point = np.array([0, 0])
+    end_point = np.array([5000, 5000])
 
-# Simulation loop
-for _ in range(100):
-    # True dynamics (in this case, a simple constant velocity motion model)
-    x_true[0] += x_true[2] * dt
-    x_true[1] += x_true[3] * dt
+    # Calculate the total distance
+    total_distance = np.linalg.norm(end_point - start_point)
 
-    # Simulate noisy measurements
-    noise = np.random.normal(0, 0.1, size=(4, 1))
-    measurements = x_true + noise
+    # Define the time step
+    time_step = 100
 
-    # Run the Kalman filter
-    x_est, P_est, _ = pos_vel_meas(x_est_prev, P_est_prev, x_true[2], x_true[3], 0.0, measurements.flatten())
+    # Calculate the number of steps
+    num_steps = int(total_distance / time_step)
 
-    # Store results
-    true_states.append(x_true.copy())
-    est_states.append(x_est.copy())
+    # Calculate the step vector
+    step_vector = (end_point - start_point) / num_steps
 
-    # Update previous state for the next iteration
-    x_est_prev = x_est
-    P_est_prev = P_est
+    # Simulation parameters
+    total_time_steps = 100
 
-# Convert lists to arrays for plotting
-true_states = np.array(true_states)
-est_states = np.array(est_states)
+    # Initialize parameters 
+    x_est = 0, 0, 0, 0
+    x_est_prev = [0 , 0 , 0 , 0]
+    P_est_prev = 0
 
-# Plotting
-plt.figure(figsize=(10, 6))
-plt.plot(true_states[:, 0], true_states[:, 1], label='True Position', color='blue')
-plt.plot(est_states[:, 0], est_states[:, 1], label='Estimated Position', color='red', linestyle='dashed')
-plt.title('Kalman Filter Simulation')
-plt.xlabel('X Position')
-plt.ylabel('Y Position')
-plt.legend()
-plt.show()
+    # True initial state
+    P_est = np.eye(4)
+    dvx = 0
+    dvy = 0
 
+    # Required initialization
+    cam_blocked = True
+    motor_left_speed = 200
+    motor_right_speed = 200
+    readimg_thymio_pos = [0, 0]
+    readimg_thymio_angle_deg = 45
+    readimg_thymio_angle = math.radians(readimg_thymio_angle_deg)
+
+    # Calculate the speed with left and right speed
+    speed = (motor_left_speed + motor_right_speed) / 2
+
+    # Lists to store simulation results
+    filtered_states = [x_est]
+    current_point_append = []
+
+    # Initialize current_point
+    current_point = start_point.astype(float).copy()  # Explicitly cast to float
+    filtered_x = []
+    filtered_y = []
+
+    # Simulation loop
+    for step in range(num_steps + 1):
+
+        # Initialization
+        x_measured, y_measured, vx_measured, vy_measured = 0, 0, 0, 0
+
+        # Plot the actual incremental steps
+        # plt.plot(int(current_point[0]), int(current_point[1]), 'go', label=f'Step {step}')  # Explicitly cast to int
+        current_point += step_vector
+        readimg_thymio_pos = current_point
+            
+        # Append current_point to the list
+        current_point_append.append(current_point.copy())
+
+        # Calculate dvx and dvy
+        x_prev, y_prev, vx_prev, vy_prev = x_est_prev[0], x_est_prev[1], x_est_prev[2], x_est_prev[3]
+
+        # Calculate dvx and dvy using radians
+        dvx = speed * math.cos(readimg_thymio_angle) - vx_prev
+        dvy = -speed * math.sin(readimg_thymio_angle) - vy_prev
+
+        # Update true state using motion model (you need to implement motion_model function)
+        if not cam_blocked:
+            x_measured, y_measured = readimg_thymio_pos[0], readimg_thymio_pos[1]
+            vx_measured, vy_measured = speed * math.cos(readimg_thymio_angle), -speed * math.sin(readimg_thymio_angle)
+
+        # Update estimates using Kalman filter (you need to implement kalman_filter function)
+        x_est, P_est = kalman_filter(x_measured, y_measured, vx_measured, vy_measured, x_est_prev, P_est_prev, dvx, dvy, cam_blocked)
+        
+        # to keep only 1 line of the filtered states
+        x_est_store = x_est[:, 0].reshape(-1, 1)
+        x_est_prev = x_est[:, 0].reshape(-1, 1)
+        P_est_prev = P_est
+
+        filtered_states.append(x_est_store)
+
+        # Extract x and y coordinates from filtered_states
+        filtered_x.append(x_est_store[0, 0])  # Assuming x_est is a 4x1 matrix
+        filtered_y.append(x_est_store[1, 0])  # Assuming x_est is a 4x1 matrix
+
+    # Extract x and y coordinates for plotting
+    true_x = np.array(current_point_append)[:, 0]
+    true_y = np.array(current_point_append)[:, 1]
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    plt.plot(true_x, true_y, label='True Path', marker='o')
+    plt.plot(filtered_x, filtered_y, label='Filtered Path', marker='x')
+    plt.title('Kalman Filter Simulation')
+    plt.xlabel('X Coordinate')
+    plt.ylabel('Y Coordinate')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
