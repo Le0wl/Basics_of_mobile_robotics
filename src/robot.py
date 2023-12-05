@@ -32,15 +32,15 @@ class robot:
 
     def turn(self,speed,angle):
         self.state = 'TURN'     # state of the robot
-        TURNING_SPEED = int(abs(self.teta/1.8) +10)
+        TURNING_SPEED = int(abs(self.teta/1.8) +10) 
         
         if(angle < 0):
-            self.v = {"motor.left.target": [-TURNING_SPEED],
-                 "motor.right.target": [TURNING_SPEED],}
+            self.v = {"motor.left.target": [-TURNING_SPEED + 10],
+                 "motor.right.target": [TURNING_SPEED + 10],}
 
         else:
-            self.v = {"motor.left.target": [TURNING_SPEED],
-                 "motor.right.target": [-TURNING_SPEED],}
+            self.v = {"motor.left.target": [TURNING_SPEED + 10],
+                 "motor.right.target": [-TURNING_SPEED + 10],}
          
 
     def stop(self):

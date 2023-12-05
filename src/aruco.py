@@ -226,7 +226,7 @@ class ArucoMarker:
         for j in range(UNIT_NUMBER):
             for k in range(UNIT_NUMBER):
                 if self.centroid_goal[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.centroid_goal[0] + PIXEL_MARGIN and self.centroid_goal[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.centroid_goal[1] + PIXEL_MARGIN:
-                    matrix[j][k] = GOAL
+                    #matrix[j][k] = GOAL
                     #print("GOAL: ",j,k)
                     frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
                     self.goal_idx = np.array([j, k])
@@ -234,12 +234,16 @@ class ArucoMarker:
 
         # Set to 3 the unit where the robot is
         if self.marker_id == 1:
+            #create array with all the matrix units corresponding to robot
+            ct = 0
             for j in range(UNIT_NUMBER):
                 for k in range(UNIT_NUMBER):
                     if self.pos[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.pos[0] + PIXEL_MARGIN and self.pos[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.pos[1] + PIXEL_MARGIN:
-                        matrix[j][k] = ROBOT
-                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (255, 0, 0), -1)
-                        self.robot_idx = np.array([j, k])
+                        #matrix[j][k] = ROBOT
+                        ct = ct + 1
+                        if ct == 1:
+                            frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (255, 0, 0), -1)
+                            self.robot_idx = np.array([j, k])
                         #print("ROBOT: ",j,k)
                         break
         

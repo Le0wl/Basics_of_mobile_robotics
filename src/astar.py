@@ -28,7 +28,7 @@ class Node():
 def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
     
-    maze = [row[::-1] for row in maze_1]
+    #maze = [row[::-1] for row in maze_1]
     #maze = [col[-1::] for col in maze]
     #exchange lines and columns
     #maze = np.transpose(maze_1)

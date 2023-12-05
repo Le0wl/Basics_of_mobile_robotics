@@ -107,8 +107,9 @@ def update_main():
     #print("PATH: ",path)
     #print(path)
     markers[4].path = path
-    if len(path) != 0:
+    if len(path) != 0: #and np.linalg.norm(robot.pos-markers[4].centroid_goal) > 15:
         robot.trajectory = aruco.Map_camera[path[0][0]][path[0][1]]
+        robot.state = 'FORWARD'
     else:
         robot.state = 'FINISH'
         #print("GOAL: ",aruco.Map_camera[path[0][0]][path[0][1]])
