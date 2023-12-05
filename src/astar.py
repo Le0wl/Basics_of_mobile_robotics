@@ -1,9 +1,8 @@
 import math
 import numpy as np
-import matplotlib.pyplot as plt
-import pathfinding as pf
 from matplotlib import colors
 # the following code is from https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
+# with some modifications made by us
 
 class Node():
     """A node class for A* Pathfinding"""
@@ -29,6 +28,12 @@ def astar(maze, start, end):
     end_node = Node(None, end)
     end_node.g = end_node.h = end_node.f = 0
 
+    # Error messeages
+    if maze[start_node.position[0],start_node.position[1]] != 0:
+        print('ERROR: start is on an obstacle')
+    if maze[end_node.position[0],end_node.position[1]] != 0:
+        print('ERROR: end is on an obstacle')
+    iteration = 0
     # Initialize both open and closed list
     open_list = []
     closed_list = []
@@ -38,7 +43,7 @@ def astar(maze, start, end):
 
     # Loop until you find the end
     while len(open_list) > 0:
-
+        iteration += 1
         # Get the current node
         current_node = open_list[0]
         current_index = 0
@@ -59,6 +64,11 @@ def astar(maze, start, end):
                 path.append(current.position)
                 current = current.parent
             return path[::-1] # Return reversed path
+
+        #else:
+            #return ("Path not found")
+        if iteration > 5000:
+            return("fuck got suck in a local minima")
 
         # Generate children
         children = []
@@ -96,11 +106,16 @@ def astar(maze, start, end):
 
             # Child is already in the open list
             for open_node in open_list:
-                if child == open_node and child.g > open_node.g:
-                    continue
+                # if child == open_node and child.g > open_node.g:
+                #     continue
+                if child == open_node:
+                    if child.g > open_node.g:
+                        open_node.g = child.g
+                        open_node.parent = child.parent
+                    break
 
             # Add the child to the open list
             open_list.append(child)
-    return(path)
+    return("path not found")
 
 
