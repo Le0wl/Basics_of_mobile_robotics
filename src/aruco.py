@@ -28,13 +28,15 @@ class ArucoMarker:
         self.Map_indices = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
         self.start_time = time.time()
 
-
+        """
         self.num_frames_average_red = 30   # Adjust this value
         self.max_tracked_objects_red = 10   # Adjust this value
         self.red_avg_count = 0
         self.avg_cx_red = [0] * self.max_tracked_objects_red
         self.avg_cy_red = [0] * self.max_tracked_objects_red
         self.num_tracked_objects_red = 0
+        """
+    
         self.pos_red = np.array([[0,0],[0,0]])
 
         self.detected_obstacles = []
@@ -43,6 +45,8 @@ class ArucoMarker:
         self.nb_obstacles = 0
 
         self.path = []
+
+        self.camera_blocked = False
 
     def update_marker(self, frame):
         #Placeholder camera parameters
@@ -206,7 +210,7 @@ class ArucoMarker:
         # Matrix representing if unit is obstacle, goal , robot or free
         matrix = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
 
-        OBSTACLE_MARGIN = 32
+        OBSTACLE_MARGIN = 0
 
         # Set to 1 the units where the obstacles are
         for i in range(self.nb_obstacles):
@@ -252,6 +256,20 @@ class ArucoMarker:
         #print("MAP: ",Map_indices)
 
 
+    def camera_blocked(self, frame):
+                 # Convert the frame to grayscale
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Calculate the average brightness of the frame
+        average_brightness = np.mean(gray_frame)
+
+        # Set a threshold for darkness (you can adjust this threshold based on your requirements)
+        darkness_threshold = 50
+
+        # Check if the average brightness is below the darkness threshold
+        return average_brightness < darkness_threshold
+
+
 def display_trajectory(frame, trajectory):
     for i in range(len(trajectory) - 1):
         #take coordinates from map_camera with trajectory indices
@@ -267,9 +285,7 @@ def display_trajectory(frame, trajectory):
 
 def main_aruco(*markers):
     cap = cv2.VideoCapture(0)  # Use 0 for default camera, change the value for other cameras
-    #open image instead
-    #cap = cv2.imread('aruco_test.png')
-
+ 
     if not cap.isOpened():
         print("Cannot open camera")
         return
@@ -282,18 +298,16 @@ def main_aruco(*markers):
     
         for marker in markers:
             frame = marker.update_marker(frame)
-            #print(f"Marker ID: {marker.marker_id}, Angle: {marker.angle:.2f}")
-        frame = marker.detect_red_objects(frame)  # Create a copy to preserve the original frame
+    
+        frame = marker.detect_red_objects(frame)  
         frame = marker.detect_goal(frame)
         frame = display_trajectory(frame, markers[4].path)
         
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)
-        #marker.update_map_matrix(frame)
 
-        #print(markers[4].Map_indices)
-        #time.sleep(0.5)
-        #print("\033")
+        if markers[0].camera_blocked(frame):
+            markers[0].camera_blocked = True
 
         cv2.imshow('Markers Detection', frame)
 

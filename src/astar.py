@@ -25,7 +25,7 @@ class Node():
 
 # Existing code...
 
-def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
+def astar(maze, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
     
     #maze = [row[::-1] for row in maze_1]
@@ -35,7 +35,7 @@ def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
     #flip matrix 90 degrees clockwise
     #maze = np.rot90(maze_1, k=1, axes=(0, 1))
     #flip matrix 90 degrees counter-clockwise
-    maze = np.rot90(maze_1, k=3, axes=(0, 1))
+    #maze = np.rot90(maze_1, k=3, axes=(0, 1))
 
     start_node = Node(None, start)
     start_node.g = start_node.h = start_node.f = 0
