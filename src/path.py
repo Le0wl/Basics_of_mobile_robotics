@@ -19,44 +19,70 @@ class Map:
         grid = np.zeros(size, dtype=int)
         return(grid)
     
-    def update_map(self, matirx):
-        self.grid = matirx
-        self.with_margin = self.add_margin(3)                    
+    def update_map(self, matrix):
+        self.grid = matrix.copy()
+        self.with_margin = matrix.copy()
+        self.add_margin(3)  
+
+    def put2(self, with_margin, i,j):
+
+        if self.grid[i][j] == 1:
+            return(with_margin)
+        with_margin[i][j] = 2
+        return(with_margin)
+ 
+
         
     def add_margin(self, margin):
-        with_margin = self.grid
+        with_margin = self.with_margin
         for i in range(self.max-1):
             for j in range(self.max-1):
                 if self.grid[i][j]==1 and self.grid[i][j-1] == 0 :
                     if j >= margin:
                         for k in range(1,margin):
+                            if self.grid[i][j-k] == 1:
+                                continue
                             with_margin[i][j-k] = 2
                     else:
                         for k in range(1,j):
+                            if self.grid[i][j-k] == 1:
+                                continue
                             with_margin[i][j-k] = 2
                 if self.grid[i][j]==1 and self.grid[i][j+1] == 0 :
                     if j <= self.max - margin:
                         for k in range(1,margin):
+                            if self.grid[i][j+k] == 1:
+                                continue
                             with_margin[i][j+k] = 2
                     else:
                         for k in range(1,self.max - j):
+                            if self.grid[i][j+k] == 1:
+                                continue
                             with_margin[i][j+k] = 2
                 if self.grid[i][j]==1 and self.grid[i-1][j] == 0 :
                     if i >= margin:
                         for k in range(1,margin):
+                            if self.grid[i-k][j] == 1:
+                                continue
                             with_margin[i-k][j] = 2
                     else:
                         for k in range(i):
+                            if self.grid[i-k][j] == 1:
+                                continue
                             with_margin[i-k][j] = 2
                 if self.grid[i][j]==1 and self.grid[i+1][j] == 0 :
                     if i <= self.max - margin:
                         for k in range(1,margin):
+                            if self.grid[i+k][j] == 1:
+                                continue
                             with_margin[i+k][j] = 2
                     else:
                         for k in range(1,self.max - i):
-                            with_margin[i+k][j] = 2
+                            if self.grid[i+k][j] == 1:
+                                continue
+                            with_margin[i+k][j] = 2              
 
-        return(with_margin)
+        # return(with_margin)
 
     
     def __len__(self):
@@ -72,7 +98,7 @@ class Map:
         self.grid[i][j] = element
 
     def plot_map(self, path):
-        map = self.grid
+        map = self.with_margin.copy()
         for i in range(len(path)):
             map[path[i]] = 3
         cmap = colors.ListedColormap(['white', 'black', 'green', 'red'])
@@ -91,25 +117,65 @@ def make_matrix(obstacles):
                 for j in range(width):
                     grid[beginning[0] + i][beginning[1]+ j] = 1
         return(grid)
-    
+def smooth_path(path, maze):
+    path = path[::-1]
+    smoothed_path = [path[0]]
+
+    for i in range(1, len(path) - 1):
+        x, y = path[i]
+
+        # Check if the straight line between the previous and next points is clear
+        if not is_obstacle_between(smoothed_path[-1], path[i + 1], maze):
+            # Skip the current point if the path is clear
+            continue
+
+        smoothed_path.append((x, y))
+
+    # Add the last point in the original path
+    smoothed_path.append(path[-1])
+
+    return smoothed_path[::-1]
+
+def is_obstacle_between(point1, point2, maze):
+
+    x1, y1 = point1
+    x2, y2 = point2
+
+    # Check if there is an obstacle along the straight line between the two points
+    dx = x2 - x1
+    dy = y2 - y1
+    steps = max(abs(dx), abs(dy))
+
+    for i in range(1, steps):
+        x = x1 + int(i * dx / steps)
+        y = y1 + int(i * dy / steps)
+
+        if maze[x][y] != 0:  # Assuming 0 represents a clear path
+            return True  # There is an obstacle
+
+    return False  # The path is clear
+
 def get_path(robot, goal, obstacles):
-    #dots = [(2, 3)]
-    #goal = (17, 46)
-    #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
     matrix = make_matrix(obstacles)
     maze = Map()
     maze.update_map(matrix)
-    maze.plot_map(((1,1),(1,2)))
+    # maze.plot_map(((0,0),(1,1)))
     path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
+    if type(path) is str:
+        print(path)
+        return(0)
+    # maze.plot_map(path)
+    path = smooth_path(path, maze.get_map())
+    print(path)
     maze.plot_map(path)
     return(path)
 
 def main():
-    robot = np.array([2, 3])
-    goal = np.array([40, 30])
-    obstacles = np.array([[[5,15],[15,49]],[[36,5],[40,15]],[[16,5],[20,20]]]) 
-    weg = get_path(robot, goal, obstacles)
-    print(weg)
+    robot = np.array([0, 0])
+    goal = np.array([45, 30])
+    obstacles = np.array([[[5,15],[10,20]],[[36,6],[40,22]],[[16,15],[20,20]], [[30,30],[40,45]]]) 
+    get_path(robot, goal, obstacles) 
+    # print(weg)
     return()
 
 if __name__ == "__main__":
