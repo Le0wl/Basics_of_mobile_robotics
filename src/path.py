@@ -24,12 +24,14 @@ class Map:
         self.with_margin = matrix.copy()
         self.add_margin(3)  
 
-    def put2(self, with_margin, i,j):
-
-        if self.grid[i][j] == 1:
-            return(with_margin)
-        with_margin[i][j] = 2
-        return(with_margin)
+    def other_corner(self, i,j):
+        while self.grid[i][j]==1:
+            i += 1
+        i -=1
+        while self.grid[i][j]==1:
+            j += 1
+        j-=1
+        return (i,j)
  
 
         
@@ -37,52 +39,17 @@ class Map:
         with_margin = self.with_margin
         for i in range(self.max-1):
             for j in range(self.max-1):
-                if self.grid[i][j]==1 and self.grid[i][j-1] == 0 :
-                    if j >= margin:
-                        for k in range(1,margin):
-                            if self.grid[i][j-k] == 1:
-                                continue
-                            with_margin[i][j-k] = 2
-                    else:
-                        for k in range(1,j):
-                            if self.grid[i][j-k] == 1:
-                                continue
-                            with_margin[i][j-k] = 2
-                if self.grid[i][j]==1 and self.grid[i][j+1] == 0 :
-                    if j <= self.max - margin:
-                        for k in range(1,margin):
-                            if self.grid[i][j+k] == 1:
-                                continue
-                            with_margin[i][j+k] = 2
-                    else:
-                        for k in range(1,self.max - j):
-                            if self.grid[i][j+k] == 1:
-                                continue
-                            with_margin[i][j+k] = 2
-                if self.grid[i][j]==1 and self.grid[i-1][j] == 0 :
-                    if i >= margin:
-                        for k in range(1,margin):
-                            if self.grid[i-k][j] == 1:
-                                continue
-                            with_margin[i-k][j] = 2
-                    else:
-                        for k in range(i):
-                            if self.grid[i-k][j] == 1:
-                                continue
-                            with_margin[i-k][j] = 2
-                if self.grid[i][j]==1 and self.grid[i+1][j] == 0 :
-                    if i <= self.max - margin:
-                        for k in range(1,margin):
-                            if self.grid[i+k][j] == 1:
-                                continue
-                            with_margin[i+k][j] = 2
-                    else:
-                        for k in range(1,self.max - i):
-                            if self.grid[i+k][j] == 1:
-                                continue
-                            with_margin[i+k][j] = 2              
+                if self.grid[i][j]==1 and self.grid[i][j-1] == 0 and self.grid[i-1][j] == 0 :
+                    end = self.other_corner(i,j)
+                    # print(end)
+                    hight,width = end[0]-i+2*margin, end[1]-j+2*margin
+                    if margin <= i <= self.max-margin and margin <= j <= self.max-margin:
+                        for di in range(hight):
+                            for dj in range(width):
+                                if self.grid[i-margin + di][j - margin+ dj] ==1:
+                                    continue
+                                with_margin[i-margin + di][j - margin+ dj] = 2
 
-        # return(with_margin)
 
     
     def __len__(self):
@@ -98,7 +65,7 @@ class Map:
         self.grid[i][j] = element
 
     def plot_map(self, path):
-        map = self.with_margin.copy()
+        map = self.grid.copy()
         for i in range(len(path)):
             map[path[i]] = 3
         cmap = colors.ListedColormap(['white', 'black', 'green', 'red'])
@@ -117,6 +84,7 @@ def make_matrix(obstacles):
                 for j in range(width):
                     grid[beginning[0] + i][beginning[1]+ j] = 1
         return(grid)
+
 def smooth_path(path, maze):
     path = path[::-1]
     smoothed_path = [path[0]]
@@ -162,6 +130,7 @@ def get_path(robot, goal, matrix):
     if type(path) is str:
         print(path)
         return(0)
+    maze.plot_map(path)
     path = smooth_path(path, maze.get_map())
     print(path)
     maze.plot_map(path)
@@ -169,11 +138,11 @@ def get_path(robot, goal, matrix):
 
 def main():
     #making a test map when the camera is not around
-    robot = np.array([0, 0])
+    robot = np.array([30, 0])
     goal = np.array([45, 30])
     obstacles = np.array([[[5,15],[10,20]],[[36,6],[40,22]],[[16,15],[20,20]], [[30,30],[40,45]]]) 
     matrix = make_matrix(obstacles)
-
+    
     get_path(robot, goal, matrix) 
     return()
 
