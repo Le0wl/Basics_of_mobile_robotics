@@ -27,30 +27,42 @@ class Map:
         self.with_margin = matrix.copy()
         # self.add_margin()  
 
+    def is_out_of_bounds(self, x, y):
+        if x < 0 or x >= self.max or y < 0 or y >= self.max:
+            return True
+        else:
+            return False
+
     def other_corner(self, i,j):
         while self.grid[i][j]==1:
+            if self.is_out_of_bounds(i,j):
+                break
             i += 1
         i -=1
         while self.grid[i][j]==1:
+            if self.is_out_of_bounds(i,j):
+                break
             j += 1
-        j-=1
+        j -=1
         return (i,j)
         
     def add_margin(self):
         margin = int(self.max / 10)
-        with_margin = self.grid.copy()
+        with_margin = self.with_margin
         for i in range(self.max-1):
             for j in range(self.max-1):
                 if self.grid[i][j]==1 and self.grid[i][j-1] == 0 and self.grid[i-1][j] == 0 :
                     end = self.other_corner(i,j)
                     # print(end)
-                    hight,width = end[0]-i+2*margin, end[1]-j+2*margin
-                    if margin <= i < self.max-margin and margin <= j < self.max-margin:
-                        for di in range(hight):
-                            for dj in range(width):
-                                if self.grid[i-margin + di][j - margin + dj] ==1:
-                                    continue
-                                with_margin[i-margin + di][j - margin + dj] = 2
+                    hight,width = end[0]-i, end[1]-j
+                    for di in range(hight+2*margin+1):
+                        for dj in range(width+2*margin+1):
+                            if self.is_out_of_bounds(i-margin + di,j - margin + dj):
+                                continue
+                            if self.grid[i-margin + di][j - margin + dj] ==1:
+                                continue
+                            with_margin[i-margin + di][j - margin + dj] = 2
+
         return(with_margin)
 
     
@@ -118,15 +130,15 @@ def get_path(map,robot, goal):
     #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
     # margin = 3
     # maze = Map(np.array(obstacles), margin)
-    maze = Map()
-    maze.update_map(map)
+    #maze = Map()
+    #maze.update_map(map)
     #print how many 1 in the matrix
     #print(np.count_nonzero(maze.grid == 1))
     
-    path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
-    path = smooth_path(path, maze.get_map())
+    path = a.astar(map.get_map(), tuple(robot), tuple(goal))
+    path = smooth_path(path, map.get_map())
     #maze.plot_map(path)
-    print("MAP: ",map)
+    #print("MAP: ",map)
     #remove the first element of the path
     #print("PATH: ",path)
     if len(path) != 0:

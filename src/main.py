@@ -15,6 +15,7 @@ import aruco
 from env import *
 from constants import *
 from path import *
+from pathfinding_test import *
 
 
 
@@ -82,9 +83,13 @@ def update_main():
     rob_idx = markers[0].robot_idx
 
     mat = Map()
+    #mat.
     mat.grid = markers[4].Map_indices
 
-    path = get_path(mat.grid,rob_idx, goal_idx)
+    #path = get_path(mat.grid,rob_idx, goal_idx)
+    #print("Rgrid: ",mat.grid)
+    path = get_path_rect(mat.grid,rob_idx, goal_idx)
+    #path = get_path(grid,rob_idx, goal_idx)
     #print("PATH: ",path)
     #print(path)
     markers[4].path = path
@@ -109,7 +114,7 @@ def update_main():
         robot.teta = robot.teta - 360
         
 
-    time.sleep(0.1)
+    time.sleep(0.5)
 #=========================== OUTPUT IS SPEED OF MOTORS =============================================
     v = robot.v
     return v

@@ -306,8 +306,8 @@ def main_aruco(*markers):
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)
 
-        if markers[0].camera_blocked(frame):
-            markers[0].camera_blocked = True
+        #if markers[0].camera_blocked(frame):
+            #markers[0].camera_blocked = True
 
         cv2.imshow('Markers Detection', frame)
 
