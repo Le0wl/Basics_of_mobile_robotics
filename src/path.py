@@ -14,25 +14,26 @@ class Map:
         self.grid = self.init_grid()
         self.with_margin = self.init_grid()
 
-        
+    # intitates empty map  
     def init_grid(self):
-        # Ar = ArucoMarker((marker_id) for marker_id in range(1, 6)) 
         size = (self.max, self.max)
         grid = np.zeros(size, dtype=int)
-        # grid = Ar.Map_indices
         return(grid)
     
+    # updated map with the new input, adds margin
     def update_map(self, matrix):
         self.grid = matrix.copy()
         self.with_margin = matrix.copy()
         self.add_margin()  
 
+    # checks if coordinates are NOT on the map
     def is_out_of_bounds(self, x, y):
         if x < 0 or x >= self.max or y < 0 or y >= self.max:
             return True
         else:
             return False
 
+    # finds the bottom right corner of a rectangular obstacle when given the top left
     def other_corner(self, i,j):
         while self.grid[i][j]==1:
             if self.is_out_of_bounds(i,j):
@@ -46,6 +47,7 @@ class Map:
         j -=1
         return (i,j)
         
+    # adds margin to the obstacles to avoid collition
     def add_margin(self):
         margin = int(self.max / 10)
         with_margin = self.with_margin
@@ -53,7 +55,6 @@ class Map:
             for j in range(self.max-1):
                 if self.grid[i][j]==1 and self.grid[i][j-1] == 0 and self.grid[i-1][j] == 0 :
                     end = self.other_corner(i,j)
-                    # print(end)
                     hight,width = end[0]-i, end[1]-j
                     for di in range(hight+2*margin+1):
                         for dj in range(width+2*margin+1):
@@ -63,19 +64,23 @@ class Map:
                                 continue
                             with_margin[i-margin + di][j - margin + dj] = 2
 
-    
+    # returns the length of the map
     def __len__(self):
         return(len(self.grid))
     
+    # returns the map wiht margin
     def get_map(self):
         return(self.with_margin)
     
+    # gets a specific element of the map without margin
     def getElement(self, i, j):
         return self.grid[i][j]
     
+    # sets a specifis element of the map without margin
     def setElement(self, i, j, element):
         self.grid[i][j] = element
 
+    # plots the path on the map without margin
     def plot_map(self, path):
         map = self.grid.copy()
         for i in range(len(path)):
@@ -84,6 +89,7 @@ class Map:
         plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
+# makes a matrix for testing when the camera is not available
 def make_matrix(obstacles):
         size = (UNIT_NUMBER, UNIT_NUMBER)
         grid = np.zeros(size, dtype=int)
@@ -97,6 +103,7 @@ def make_matrix(obstacles):
                     grid[beginning[0] + i][beginning[1]+ j] = 1
         return(grid)
 
+# smooths the path returns only the relevant corners
 def smooth_path(path, maze):
     path = path[::-1]
     smoothed_path = [path[0]]
@@ -130,7 +137,7 @@ def is_obstacle_between(point1, point2, maze):
         x = x1 + int(i * dx / steps)
         y = y1 + int(i * dy / steps)
 
-        if maze[x][y] != 0:  # Assuming 0 represents a clear path
+        if maze[x][y] != 0:  # Assuming 0 is a clear path
             return True  # There is an obstacle
 
     return False  # The path is clear
@@ -154,8 +161,8 @@ def get_path(robot, goal, matrix):
 def main():
     #making a test map when the camera is not around
     robot = np.array([1, 0])
-    goal = np.array([15, 25])
-    obstacles = np.array([[[0,5],[10,10]],[[17,15],[19,19]]]) 
+    goal = np.array([20, 25])
+    obstacles = np.array([[[0,5],[10,10]],[[17,10],[18,20]]]) 
     matrix = make_matrix(obstacles)
     
     get_path(robot, goal, matrix) 
