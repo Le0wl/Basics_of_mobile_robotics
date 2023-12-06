@@ -16,12 +16,13 @@ from env import *
 from constants import *
 from path import *
 from astar_path_planning import *
+from kalman import *
 
 
 
 map_base = environment()
 robot = robot()
-
+kalman = Kalman()
 
 markers = [ArucoMarker(marker_id) for marker_id in range(1, 6)]  # Create instances for each ArUco marker
 
@@ -38,7 +39,8 @@ robot_th.start()
 time.sleep(3)
 print("Running threads...")
 
-def update_main():
+def update_main(speed, angular_speed):
+
 
     camera_blocked = markers[0].camera_blocked
 
@@ -49,25 +51,29 @@ def update_main():
     map_base.bottom_right = markers[4].pos
 
 #============================= MAP UPDATE ======================================================
-    #map_base.update_map()
+    x_est, P_est = kalman.kalman_filter(markers[0].pos[0], markers[0].pos[1], markers[0].angle, speed, angular_speed, camera_blocked)
 
-    robot.pos = markers[0].pos
-    robot.phi = markers[0].angle
+
+    #robot.pos = markers[0].pos
+    #robot.phi = markers[0].angle
+
+    robot.pos = x_est[0:2]
+    robot.phi = x_est[2]
+    #print("Position: ", robot.pos)
+    #print("Angle: ", robot.phi)
+    #print("     ")
   
     distance_vertical = map_base.get_vertical_distance()
-   
     distance_horizontal = map_base.get_horizontal_distance()
 
     map_base.map = np.zeros((UNIT_NUMBER,UNIT_NUMBER,2))
-    # get size of marker
 
  #============================= MAP GENERATION ======================================================
-    ratio = 1.2
 
     for i in range(UNIT_NUMBER):
         for j in range(UNIT_NUMBER):
             
-            x_pos = j*ratio + (2*i+1)*(distance_horizontal - j*2*ratio)/(2*UNIT_NUMBER)
+            x_pos = j*RATIO + (2*i+1)*(distance_horizontal - j*2*RATIO)/(2*UNIT_NUMBER)
             y_pos = -(2*j+1)*distance_vertical/(2*UNIT_NUMBER)
 
             map_base.map[i,j] = map_base.top_left + np.array([x_pos,y_pos])
@@ -85,21 +91,18 @@ def update_main():
     path = get_path_rect(mat.grid,rob_idx, goal_idx)
     
     markers[0].path = path
-    #print("Camera blocked: ", camera_blocked)
-    
-    if len(path) != 0: #and np.linalg.norm(robot.pos-markers[4].centroid_goal) > 15:
-        robot.trajectory = aruco.Map_camera[path[0][0]][path[0][1]]
-        robot.state = 'FORWARD'
 
     goal_coord = aruco.Map_camera[goal_idx[0]][goal_idx[1]]
     distance_to_goal = np.linalg.norm(robot.pos - goal_coord)
     
     if distance_to_goal < 50:
         robot.state = 'FINISH'
-    else:
+    elif len(path) != 0: 
+        robot.trajectory = aruco.Map_camera[path[0][0]][path[0][1]]
         robot.state = 'FORWARD'
   
 #============================= ANGLE CALCULATION ====================================================
+
     angle =np.rad2deg(np.arctan2(-robot.trajectory[1] + robot.pos[1],robot.trajectory[0] - robot.pos[0])) + 180
 
     if angle > 180:
@@ -113,9 +116,10 @@ def update_main():
     time.sleep(0.1)
 #=========================== OUTPUT IS SPEED OF MOTORS =============================================
     v = robot.v
-    if camera_blocked:
-        v = {"motor.left.target": [0],
-             "motor.right.target": [0],}
+
+    #if camera_blocked:
+        #v = {"motor.left.target": [0],
+             #"motor.right.target": [0],}
     return v
     
 

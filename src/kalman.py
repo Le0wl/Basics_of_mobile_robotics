@@ -11,7 +11,13 @@ import math
 import matplotlib.pyplot as plt
 
 class Kalman:
-    def kalman_filter(x_measured, y_measured, angle_prev, vel, angle_vel, x_est_prev, P_est_prev, cam_blocked = False):
+    def __init__(self):
+        self.x_est_prev = np.array([[0], [0], [0]])
+        self.P_est_prev = np.diag([1, 1, 1])
+
+
+
+    def kalman_filter(self,x_measured, y_measured, angle_prev, vel, angle_vel,cam_blocked = False):
         # --------------------Iniitialisation------------------
         # Set the sampling time
         Ts = 0.1
@@ -48,12 +54,12 @@ class Kalman:
                         [angle_vel]])
 
         # Prediction step
-        x_est_a_priori = np.dot(A, x_est_prev) + np.dot(B, U_in)
-        P_est_a_priori = np.dot(A, np.dot(P_est_prev, A.T)) + Q
+        x_est_a_priori = np.dot(A, self.x_est_prev) + np.dot(B, U_in)
+        P_est_a_priori = np.dot(A, np.dot(self.P_est_prev, A.T)) + Q
 
         
         # Update step
-        y = np.array([[x_measured], [y_measured], [angle]])
+        y = np.array([[x_measured], [y_measured], [angle_prev]])
         y_measured_pred = np.dot(H, x_est_a_priori)
 
         # Inovation" refers to the difference between the observed (or measured) data and the predicted
@@ -74,5 +80,10 @@ class Kalman:
 
         x_est = x_est_a_priori + np.dot(K, innovation)
         P_est = P_est_a_priori - np.dot(K, np.dot(H, P_est_a_priori))
+        self.x_est_prev = x_est
+        self.P_est_prev = P_est
+        #x_est = [x_measured, y_measured, angle_prev]
+        #transpose x_est
+        #x_est = np.transpose(x_est)
 
         return x_est, P_est
