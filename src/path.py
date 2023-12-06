@@ -6,10 +6,11 @@ from matplotlib import colors
 import astar as a
 from constants import *
 from aruco import*
+import time
 
 class Map:
     def __init__(self):
-        self.max = UNIT_NUMBER
+        self.max = UNIT_NUMBER 
         self.grid = self.init_grid()
         self.with_margin = self.init_grid()
 
@@ -22,34 +23,40 @@ class Map:
     def update_map(self, matrix):
         self.grid = matrix.copy()
         self.with_margin = matrix.copy()
-        self.add_margin(3)  
+        self.add_margin()  
+
+    def is_out_of_bounds(self, x, y):
+        if x < 0 or x >= self.max or y < 0 or y >= self.max:
+            return True
+        else:
+            return False
 
     def other_corner(self, i,j):
-        while self.grid[i][j]==1:
+        while not self.is_out_of_bounds(i,j) and self.grid[i][j]==1:
             i += 1
         i -=1
-        while self.grid[i][j]==1:
+        while not self.is_out_of_bounds(i,j) and self.grid[i][j]==1:
             j += 1
-        j-=1
+        j -=1
         return (i,j)
- 
-
         
-    def add_margin(self, margin):
+    def add_margin(self):
+        margin = int(self.max / 10)
         with_margin = self.with_margin
         for i in range(self.max-1):
             for j in range(self.max-1):
                 if self.grid[i][j]==1 and self.grid[i][j-1] == 0 and self.grid[i-1][j] == 0 :
                     end = self.other_corner(i,j)
-                    # print(end)
-                    hight,width = end[0]-i+2*margin, end[1]-j+2*margin
-                    if margin <= i <= self.max-margin and margin <= j <= self.max-margin:
-                        for di in range(hight):
-                            for dj in range(width):
-                                if self.grid[i-margin + di][j - margin+ dj] ==1:
-                                    continue
-                                with_margin[i-margin + di][j - margin+ dj] = 2
+                    hight,width = end[0]-i, end[1]-j
+                    for di in range(hight+2*margin+1):
+                        for dj in range(width+2*margin+1):
+                            if self.is_out_of_bounds(i-margin + di,j - margin + dj):
+                                continue
+                            if self.grid[i-margin + di][j - margin + dj] ==1:
+                                continue
+                            with_margin[i-margin + di][j - margin + dj] = 2
 
+        return(with_margin)
 
     
     def __len__(self):
@@ -72,6 +79,7 @@ class Map:
         plt.imshow(map, cmap=cmap, interpolation='nearest')
         plt.show()
 
+# makes a matrix for testing when the camera is not available
 def make_matrix(obstacles):
         size = (UNIT_NUMBER, UNIT_NUMBER)
         grid = np.zeros(size, dtype=int)
@@ -80,8 +88,8 @@ def make_matrix(obstacles):
             beginning = obsta[0]
             end = obsta[1]
             hight,width = end[0]-beginning[0],end[1]-beginning[1]
-            for i in range(hight):
-                for j in range(width):
+            for i in range(hight+1):
+                for j in range(width+1):
                     grid[beginning[0] + i][beginning[1]+ j] = 1
         return(grid)
 
@@ -123,28 +131,41 @@ def is_obstacle_between(point1, point2, maze):
 
     return False  # The path is clear
 
-def get_path(robot, goal, matrix):
+def get_path(map,robot, goal):
+    #dots = [(2, 3)]
+    #goal = (17, 46)
+    #obstacles = [((5,5),(10,7)),((36,5),(40,20))]
+    # margin = 3
+    # maze = Map(np.array(obstacles), margin)
     maze = Map()
-    maze.update_map(matrix)
+    maze.update_map(map)
+    # print how many 1 in the matrix
+    # print(np.count_nonzero(maze.grid == 1))
+    
     path = a.astar(maze.get_map(), tuple(robot), tuple(goal))
-    if type(path) is str:
-        print(path)
-        return(0)
-    maze.plot_map(path)
     path = smooth_path(path, maze.get_map())
-    print(path)
-    maze.plot_map(path)
+    # maze.plot_map(path)
+    #print("MAP: ",map)
+    #remove the first element of the path
+    #print("PATH: ",path)
+    if len(path) != 0:
+        path.pop(0)
+    # maze.plot_map(path)
+    #print(map)
+    #time.sleep(0.5)
+    #print("\033")
     return(path)
 
-def main():
-    #making a test map when the camera is not around
-    robot = np.array([30, 0])
-    goal = np.array([45, 30])
-    obstacles = np.array([[[5,15],[10,20]],[[36,6],[40,22]],[[16,15],[20,20]], [[30,30],[40,45]]]) 
-    matrix = make_matrix(obstacles)
-    
-    get_path(robot, goal, matrix) 
-    return()
+# def main():
 
-if __name__ == "__main__":
-    main()
+#     robot = np.array([5, 3])
+#     goal = np.array([13, 14])
+#     obstacles = np.array([[[5,10],[10,14]], [[1,1], [3,3]]]) 
+#     maze = make_matrix(obstacles)
+
+#     weg = get_path(maze, robot, goal)
+#     print(weg)
+#     return()
+
+# if __name__ == "__main__":
+#     main()
