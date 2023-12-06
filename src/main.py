@@ -53,13 +53,14 @@ def update_main(speed, angular_speed):
 #============================= MAP UPDATE ======================================================
     x_est, P_est = kalman.kalman_filter(markers[0].pos[0], markers[0].pos[1], markers[0].angle, speed, angular_speed, camera_blocked)
 
-
+    markers[0].robot_est = x_est
     #robot.pos = markers[0].pos
     #robot.phi = markers[0].angle
 
     robot.pos = x_est[0:2]
+
     robot.phi = x_est[2]
-    #print("Position: ", robot.pos)
+    print("Pos: ", robot.pos)
     #print("Angle: ", robot.phi)
     #print("     ")
   

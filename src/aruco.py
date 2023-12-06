@@ -34,6 +34,8 @@ class ArucoMarker:
 
         self.camera_blocked = False
 
+        self.robot_est = np.array([0,0])
+
     def update_marker(self, frame):
 
         # Camera parameters
@@ -215,6 +217,10 @@ class ArucoMarker:
         
         self.Map_indices = matrix
 
+    def display_estimated_position(self,frame):
+        frame = cv2.circle(frame, (int(self.robot_est[0]),int(self.robot_est[1])), 3, (255, 255, 0), -1)
+            
+
 
 
 def display_trajectory(frame, trajectory, position):
@@ -258,6 +264,7 @@ def main_aruco(*markers):
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)
 
+        markers[0].display_estimated_position(frame)
 
         cv2.imshow('Markers Detection', frame)
 

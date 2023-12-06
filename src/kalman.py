@@ -38,7 +38,7 @@ class Kalman:
                     [0, 0, 1]])
 
         # Process noise covariance matrix
-        Q = np.diag([1, 1, 1])   # ADJUST ACCORDINGLY
+        Q = np.diag([2, 2, 2])   # ADJUST ACCORDINGLY
 
         # Set R (Measurement noise covariance matrix) to infinity if the camera is blocked
         # Measurement noise covariance matrix
@@ -46,7 +46,7 @@ class Kalman:
             R = np.diag([np.inf, np.inf, np.inf])
         else:
             # Set a regular value for R when the camera is not blocked
-            R = np.diag([0.3, 0.3, 0.3])*5       # ADJUST ACCORDINGLY
+            R = np.diag([0.3, 0.3, 0.3])       # ADJUST ACCORDINGLY
 
         # Prediction step
         # Assuming dvx and dvy are control inputs
