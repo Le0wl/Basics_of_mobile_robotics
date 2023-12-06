@@ -73,6 +73,7 @@ class ArucoMarker:
 
             if(self.marker_id == 1):
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 255, 0), 2)
+                self.camera_blocked = False
       
             if(self.marker_id == 4):
 
@@ -83,6 +84,9 @@ class ArucoMarker:
                         frame = cv2.circle(frame, (int(unit_pos[0]),int(unit_pos[1])), 1, (0, 255, 0), -1)
                         # Ensure unit_pos contains integer values and convert to tuple
                         unit_pos = tuple(map(int, unit_pos))
+        else:
+            self.camera_blocked = True
+    
         return frame
     
     
@@ -91,14 +95,21 @@ class ArucoMarker:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         
         # Define the lower and upper bounds for the red color in HSV
-        lower_red = np.array([0, 100, 100])
-        upper_red = np.array([10, 255, 255])
+        #lower_red = np.array([0, 100, 100])
+        #upper_red = np.array([10, 255, 255])
+        # dbounds for darker red
+        lower_red = np.array([160, 100, 100])
+        upper_red = np.array([180, 255, 255])
+        #detect black
+        #lower_red = np.array([0, 0, 0])
+        #upper_red = np.array([255, 255, 30])
+        #detect really dark red
 
         # Create a mask to isolate red regions in the image
         mask = cv2.inRange(hsv, lower_red, upper_red)
 
         # Apply morphological operations to remove noise
-        kernel = np.ones((5, 5), np.uint8)
+        kernel = np.ones((4, 4), np.uint8)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
@@ -175,12 +186,15 @@ class ArucoMarker:
                     if top_left[0] - OBSTACLE_MARGIN < Map_camera[j][k][0] < bottom_right[0] + OBSTACLE_MARGIN and top_left[1] - OBSTACLE_MARGIN < Map_camera[j][k][1] < bottom_right[1] + OBSTACLE_MARGIN:
                         matrix[UNIT_NUMBER-k-1][j] = OBSTACLE
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 0, 255), -1)
-                        
+        ct_gl = 0
         for j in range(UNIT_NUMBER):
             for k in range(UNIT_NUMBER):
                 if self.centroid_goal[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.centroid_goal[0] + PIXEL_MARGIN and self.centroid_goal[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.centroid_goal[1] + PIXEL_MARGIN:
-                    frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
-                    self.goal_idx = np.array([j, k])
+                    
+                    ct_gl = ct_gl + 1
+                    if ct_gl == 1:
+                        self.goal_idx = np.array([j, k])
+                        frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
                     break
 
         
@@ -202,22 +216,12 @@ class ArucoMarker:
         self.Map_indices = matrix
 
 
-    def camera_blocked(self, frame):
-                 # Convert the frame to grayscale
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # Calculate the average brightness of the frame
-        average_brightness = np.mean(gray_frame)
-
-        # Set a threshold for darkness (you can adjust this threshold based on your requirements)
-        darkness_threshold = 50
-
-        # Check if the average brightness is below the darkness threshold
-        return average_brightness < darkness_threshold
-
-
-def display_trajectory(frame, trajectory):
-
+def display_trajectory(frame, trajectory, position):
+    if len(trajectory) != 0:
+        x0 = Map_camera[trajectory[0][0]][trajectory[0][1]][0]
+        y0 = Map_camera[trajectory[0][0]][trajectory[0][1]][1]
+        frame = cv2.line(frame,(int(position[0]),int(position[1])), (int(x0),int(y0)), (0, 0, 255), 2)
     for i in range(len(trajectory) - 1):
         #take coordinates from map_camera with trajectory indices
         x1 = Map_camera[trajectory[i][0]][trajectory[i][1]][0]
@@ -231,7 +235,8 @@ def display_trajectory(frame, trajectory):
 
 
 def main_aruco(*markers):
-    cap = cv2.VideoCapture(0)  # Use 0 for default camera, change the value for other cameras
+    #cap = cv2.VideoCapture(0)  # Use 0 for default camera, change the value for other cameras
+    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
  
     if not cap.isOpened():
         print("Cannot open camera")
@@ -248,13 +253,11 @@ def main_aruco(*markers):
     
         frame = marker.detect_red_objects(frame)  
         frame = marker.detect_goal(frame)
-        frame = display_trajectory(frame, markers[4].path)
+        frame = display_trajectory(frame, markers[0].path, markers[0].pos)
         
         markers[0].update_map_matrix(frame)
         markers[4].update_map_matrix(frame)
 
-        #if markers[0].camera_blocked(frame):
-            #markers[0].camera_blocked = True
 
         cv2.imshow('Markers Detection', frame)
 

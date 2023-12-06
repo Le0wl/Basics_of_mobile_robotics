@@ -49,14 +49,14 @@ def update_main():
     map_base.bottom_right = markers[4].pos
 
 #============================= MAP UPDATE ======================================================
-    map_base.update_map()
+    #map_base.update_map()
 
     robot.pos = markers[0].pos
     robot.phi = markers[0].angle
   
-    distance_vertical = np.linalg.norm(map_base.bottom_left - map_base.top_left)
+    distance_vertical = map_base.get_vertical_distance()
    
-    distance_horizontal = np.linalg.norm(map_base.top_left - map_base.bottom_right)
+    distance_horizontal = map_base.get_horizontal_distance()
 
     map_base.map = np.zeros((UNIT_NUMBER,UNIT_NUMBER,2))
     # get size of marker
@@ -84,9 +84,19 @@ def update_main():
 
     path = get_path_rect(mat.grid,rob_idx, goal_idx)
     
-    markers[4].path = path
+    markers[0].path = path
+    #print("Camera blocked: ", camera_blocked)
+    
     if len(path) != 0: #and np.linalg.norm(robot.pos-markers[4].centroid_goal) > 15:
         robot.trajectory = aruco.Map_camera[path[0][0]][path[0][1]]
+        robot.state = 'FORWARD'
+
+    goal_coord = aruco.Map_camera[goal_idx[0]][goal_idx[1]]
+    distance_to_goal = np.linalg.norm(robot.pos - goal_coord)
+    
+    if distance_to_goal < 50:
+        robot.state = 'FINISH'
+    else:
         robot.state = 'FORWARD'
   
 #============================= ANGLE CALCULATION ====================================================
@@ -100,9 +110,12 @@ def update_main():
     if(robot.teta > 180):
         robot.teta = robot.teta - 360
         
-    time.sleep(0.5)
+    time.sleep(0.1)
 #=========================== OUTPUT IS SPEED OF MOTORS =============================================
     v = robot.v
+    if camera_blocked:
+        v = {"motor.left.target": [0],
+             "motor.right.target": [0],}
     return v
     
 

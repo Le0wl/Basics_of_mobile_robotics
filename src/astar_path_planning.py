@@ -86,7 +86,7 @@ def get_path_rect(grid, start, goal):
     start = (start[1],start[0])
     goal = (goal[1],goal[0])
 
-    path = find_shortest_path(grid, start, goal, 3)
+    path = find_shortest_path(grid, start, goal, OBSTACLE_MARGIN)
     #print("PATH: ",path)
     if path is None:
         return []
