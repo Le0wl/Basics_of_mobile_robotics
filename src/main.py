@@ -40,14 +40,10 @@ robot_th.start()
 
 print("MAIN")
 
-<<<<<<< HEAD
 def update_main(speed, angular_speed):
 
     ex_time = time.time()
     camera_blocked = markers[0].camera_blocked
-=======
-def update_main():
->>>>>>> 68bf7c7df1f13fb44e3b5f6bd47448373996465c
 
 #============================= SETTING MAP CORNERS ======================================================
     map_base.top_left = markers[1].pos
@@ -62,7 +58,6 @@ def update_main():
     robot.phi = markers[0].angle
     #angle = markers[0].angle
 
-<<<<<<< HEAD
     robot.pos = x_est[0:2]
 
     robot.phi = x_est[2]
@@ -72,12 +67,6 @@ def update_main():
   
     distance_vertical = map_base.get_vertical_distance()
     distance_horizontal = map_base.get_horizontal_distance()
-=======
-    #distance_horizontal = np.linalg.norm(map_base.bottom_left - map_base.bottom_right)
-    distance_vertical = np.linalg.norm(map_base.bottom_left - map_base.top_left)
-    #distance_horizontal = map_base.bottom_right[0] - map_base.bottom_left[0] - markers[3].marker_pxl_size/2 - markers[4].marker_pxl_size/2
-    distance_horizontal = np.linalg.norm(map_base.top_left - map_base.bottom_right)
->>>>>>> 68bf7c7df1f13fb44e3b5f6bd47448373996465c
 
     map_base.map = np.zeros((UNIT_NUMBER,UNIT_NUMBER,2))
     # get size of marker
@@ -125,7 +114,6 @@ def update_main():
     # if robot.trajectory.size < 2 and len(path) !=0:
     #     path = path.pop()  
 
-<<<<<<< HEAD
     goal_coord = aruco.Map_camera[goal_idx[0]][goal_idx[1]]
 
     #print("Goal: ", goal_coord)
@@ -142,8 +130,6 @@ def update_main():
         robot.trajectory = aruco.Map_camera[path[0][0]][path[0][1]]
         robot.state = 'FORWARD'
   
-=======
->>>>>>> 68bf7c7df1f13fb44e3b5f6bd47448373996465c
 #============================= ANGLE CALCULATION ====================================================
     angle =np.rad2deg(np.arctan2(-robot.trajectory[1] + robot.pos[1],robot.trajectory[0] - robot.pos[0])) + 180
 
@@ -159,15 +145,12 @@ def update_main():
     time.sleep(0.1)
 #=========================== OUTPUT IS SPEED OF MOTORS =============================================
     v = robot.v
-<<<<<<< HEAD
 
     #if camera_blocked:
         #v = {"motor.left.target": [0],
              #"motor.right.target": [0],}
 
     print("Execution time: ", time.time() - ex_time)
-=======
->>>>>>> 68bf7c7df1f13fb44e3b5f6bd47448373996465c
     return v
     
 
