@@ -1,8 +1,7 @@
-import math
 import numpy as np
 from matplotlib import colors
-# the following code is from https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
-# with some modifications made by us
+import math
+from constants import *
 
 class Node():
     """A node class for A* Pathfinding"""
@@ -10,7 +9,6 @@ class Node():
     def __init__(self, parent=None, position=None):
         self.parent = parent
         self.position = position
-
         self.g = 0
         self.h = 0
         self.f = 0
@@ -18,10 +16,25 @@ class Node():
     def __eq__(self, other):
         return self.position == other.position
 
+    def calculate_heuristic(self, end):
+        # Euclidean distance heuristic
+        self.h = math.sqrt((self.position[0] - end.position[0])**2 + (self.position[1] - end.position[1])**2)
 
-def astar(maze, start, end):
+
+# Existing code...
+
+def astar(maze_1, start, end, MAX_ITERATIONS=1000, MAX_LIST_SIZE=1000):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
-
+    
+    # maze = [row[::-1] for row in maze_1]
+    # #maze = [col[-1::] for col in maze]
+    # #exchange lines and columns
+    # #maze = np.transpose(maze_1)
+    # #flip matrix 90 degrees clockwise
+    # #maze = np.rot90(maze_1, k=1, axes=(0, 1))
+    # #flip matrix 90 degrees counter-clockwise
+    # maze = np.rot90(maze_1, k=3, axes=(0, 1))
+    maze = maze_1
     # Create start and end node
     start_node = Node(None, start)
     start_node.g = start_node.h = start_node.f = 0
@@ -67,8 +80,8 @@ def astar(maze, start, end):
 
         #else:
             #return ("Path not found")
-        if iteration > 5000:
-            return("fuck got suck in a local minima")
+        if iteration > 1000:
+            return("got suck in a local minima")
 
         # Generate children
         children = []
@@ -117,5 +130,3 @@ def astar(maze, start, end):
             # Add the child to the open list
             open_list.append(child)
     return("path not found")
-
-
