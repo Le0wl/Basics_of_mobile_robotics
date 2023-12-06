@@ -116,8 +116,20 @@ class ArucoMarker:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         
         # Define the lower and upper bounds for the red color in HSV
+<<<<<<< HEAD
+        lower_red = np.array([0, 100, 100])
+        upper_red = np.array([10, 255, 255])
+        # dbounds for darker red
+        #lower_red = np.array([160, 20, 20])
+        #upper_red = np.array([180, 255, 255])
+        #detect black
+        #lower_red = np.array([0, 0, 0])
+        #upper_red = np.array([255, 255, 30])
+        #detect really dark red
+=======
         lower_red = np.array([2, 15, 15])
         upper_red = np.array([15, 230, 255])
+>>>>>>> 68bf7c7df1f13fb44e3b5f6bd47448373996465c
 
         # Create a mask to isolate red regions in the image
         mask = cv2.inRange(hsv, lower_red, upper_red)
