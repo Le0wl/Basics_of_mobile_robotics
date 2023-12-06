@@ -27,9 +27,10 @@ class Kalman:
                     [0, 1, 0],
                     [0, 0, 1]])
                     
+        angle_prev= np.deg2rad(angle_prev)
         # Control matrix
         B = np.array([[math.cos(angle_prev)*Ts, 0],
-                    [math.sin(angle_prev)*Ts, 0],
+                    [-math.sin(angle_prev)*Ts, 0],
                     [0, Ts]])
         
         # Measurement matrix that relates to state vector to measurement
@@ -38,7 +39,7 @@ class Kalman:
                     [0, 0, 1]])
 
         # Process noise covariance matrix
-        Q = np.diag([2, 2, 2])   # ADJUST ACCORDINGLY
+        Q = np.diag([1, 1, 1])   # ADJUST ACCORDINGLY
 
         # Set R (Measurement noise covariance matrix) to infinity if the camera is blocked
         # Measurement noise covariance matrix
@@ -51,13 +52,13 @@ class Kalman:
         # Prediction step
         # Assuming dvx and dvy are control inputs
         U_in = np.array([[vel],
-                        [angle_vel]])
+                        [-angle_vel]])
 
         # Prediction step
         x_est_a_priori = np.dot(A, self.x_est_prev) + np.dot(B, U_in)
         P_est_a_priori = np.dot(A, np.dot(self.P_est_prev, A.T)) + Q
 
-        
+        angle_prev = np.rad2deg(angle_prev)
         # Update step
         y = np.array([[x_measured], [y_measured], [angle_prev]])
         y_measured_pred = np.dot(H, x_est_a_priori)

@@ -97,11 +97,11 @@ class ArucoMarker:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         
         # Define the lower and upper bounds for the red color in HSV
-        #lower_red = np.array([0, 100, 100])
-        #upper_red = np.array([10, 255, 255])
+        lower_red = np.array([0, 100, 100])
+        upper_red = np.array([10, 255, 255])
         # dbounds for darker red
-        lower_red = np.array([160, 100, 100])
-        upper_red = np.array([180, 255, 255])
+        #lower_red = np.array([160, 20, 20])
+        #upper_red = np.array([180, 255, 255])
         #detect black
         #lower_red = np.array([0, 0, 0])
         #upper_red = np.array([255, 255, 30])

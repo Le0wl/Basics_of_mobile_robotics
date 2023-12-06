@@ -41,7 +41,7 @@ print("Running threads...")
 
 def update_main(speed, angular_speed):
 
-
+    ex_time = time.time()
     camera_blocked = markers[0].camera_blocked
 
 #============================= SETTING MAP CORNERS ======================================================
@@ -60,7 +60,7 @@ def update_main(speed, angular_speed):
     robot.pos = x_est[0:2]
 
     robot.phi = x_est[2]
-    print("Pos: ", robot.pos)
+    #print("Pos: ", robot.pos)
     #print("Angle: ", robot.phi)
     #print("     ")
   
@@ -94,9 +94,16 @@ def update_main(speed, angular_speed):
     markers[0].path = path
 
     goal_coord = aruco.Map_camera[goal_idx[0]][goal_idx[1]]
-    distance_to_goal = np.linalg.norm(robot.pos - goal_coord)
-    
-    if distance_to_goal < 50:
+
+    #print("Goal: ", goal_coord)
+    #print("Rob: ", robot.pos)
+
+    #distance_to_goal = np.linalg.norm(robot.pos - goal_coord)
+    distance_to_goal = math.sqrt((robot.pos[0] - goal_coord[0])**2 + (robot.pos[1] - goal_coord[1])**2)
+
+    #print("Distance to goal: ", distance_to_goal)
+
+    if distance_to_goal < DISTANCE_THRESHOLD:
         robot.state = 'FINISH'
     elif len(path) != 0: 
         robot.trajectory = aruco.Map_camera[path[0][0]][path[0][1]]
@@ -121,6 +128,8 @@ def update_main(speed, angular_speed):
     #if camera_blocked:
         #v = {"motor.left.target": [0],
              #"motor.right.target": [0],}
+
+    print("Execution time: ", time.time() - ex_time)
     return v
     
 
