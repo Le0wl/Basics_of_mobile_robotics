@@ -20,24 +20,10 @@ class ArucoMarker:
         self.marker_id = marker_id
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         self.parameters = cv2.aruco.DetectorParameters_create() if hasattr(cv2.aruco, 'DetectorParameters_create') else cv2.aruco.DetectorParameters()
-        self.marker_pxl_size = 0
-        self.focal_length = 1000  # Example focal length (adjust as needed)
-        self.center = (640/2, 480/2)  # Example center of the frame, replace with actual center
+        
         self.robot_idx = np.array([0, 0])
         self.goal_idx = np.array([0, 0])
         self.Map_indices = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
-        self.start_time = time.time()
-
-        """
-        self.num_frames_average_red = 30   # Adjust this value
-        self.max_tracked_objects_red = 10   # Adjust this value
-        self.red_avg_count = 0
-        self.avg_cx_red = [0] * self.max_tracked_objects_red
-        self.avg_cy_red = [0] * self.max_tracked_objects_red
-        self.num_tracked_objects_red = 0
-        """
-    
-        self.pos_red = np.array([[0,0],[0,0]])
 
         self.detected_obstacles = []
         self.detected_goal = []
@@ -49,10 +35,12 @@ class ArucoMarker:
         self.camera_blocked = False
 
     def update_marker(self, frame):
-        #Placeholder camera parameters
+
+        # Camera parameters
         focal_length = 1000  # Example focal length (adjust as needed)
         center = (frame.shape[1] / 2, frame.shape[0] / 2)  # Center of the frame
-        # Placeholder camera matrix 
+
+        # Camera matrix 
         cameraMatrix = np.array([[focal_length, 0, center[0]],
                                      [0, focal_length, center[1]],
                                     [0, 0, 1]], dtype=np.float64)
@@ -77,24 +65,17 @@ class ArucoMarker:
             angle = np.degrees(angle) + 90
             self.pos = axis_points[0].ravel()
             frame = cv2.circle(frame, tuple(self.pos), 3, (0, 255, 0), -1)
+
             # angle goes from 0 to 270 ang 0 to -90
             if(angle > 180):
                 angle = angle - 360
             self.angle = angle
 
-
-
             if(self.marker_id == 1):
                 frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 255, 0), 2)
-            #else:
-                #frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[1].ravel()), (0, 0, 100), 5)
-                #frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[2].ravel()), (0, 100, 0), 5)
-                #frame = cv2.line(frame, tuple(axis_points[0].ravel()), tuple(axis_points[3].ravel()), (100, 0, 0), 5)
-
+      
             if(self.marker_id == 4):
-                #cv2.putText(frame,"o",(axis_points[1][0][0] ,axis_points[1][0][1]),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2,cv2.LINE_AA)
-                # display circle in the center of the marker (self.pos)
-               
+
                 #display all the unit positions
                 for i in range(UNIT_NUMBER):
                     for j in range(UNIT_NUMBER):
@@ -102,18 +83,6 @@ class ArucoMarker:
                         frame = cv2.circle(frame, (int(unit_pos[0]),int(unit_pos[1])), 1, (0, 255, 0), -1)
                         # Ensure unit_pos contains integer values and convert to tuple
                         unit_pos = tuple(map(int, unit_pos))
-
-                        # Check if unit_pos is within frame boundaries
-                        """
-                        if 0 <= unit_pos[0] < frame.shape[1] and 0 <= unit_pos[1] < frame.shape[0]:
-                            if i == self.goal_idx[0] and j == self.goal_idx[1]:
-                                frame = cv2.circle(frame, unit_pos, 3, (0, 0, 255), -1)
-                            else:
-                                frame = cv2.circle(frame, unit_pos, 1, (255, 0, 0), -1)
-                            #frame = cv2.circle(frame, (340,100), 1, (0, 255, 0), -1)
-                            #print("UNIT: ",unit_pos)
-                            """
-
         return frame
     
     
@@ -124,16 +93,6 @@ class ArucoMarker:
         # Define the lower and upper bounds for the red color in HSV
         lower_red = np.array([0, 100, 100])
         upper_red = np.array([10, 255, 255])
-        #for low light conditions
-        #lower_red = np.array([0, 50, 50])
-        #upper_red = np.array([10, 255, 255])
-        #pwhite ish red
-        #lower_red = np.array([0, 100, 100])
-        #upper_red = np.array([10, 255, 255])
-        
-        
-            
-
 
         # Create a mask to isolate red regions in the image
         mask = cv2.inRange(hsv, lower_red, upper_red)
@@ -188,8 +147,7 @@ class ArucoMarker:
             if area > 500:  # Set a minimum area threshold
                 x, y, w, h = cv2.boundingRect(contour)
                 self.centroid_goal = np.array([x + w/2, y + h/2])
-                #print("GOAL: ",self.centroid_goal)
-                
+   
                 if w > 30 and h > 30:  # Set minimum width and height thresholds
                     top_left = (x, y)
                     bottom_right = (x + w, y + h)
@@ -197,17 +155,12 @@ class ArucoMarker:
                     
                     # Draw contours around the detected objects on the frame
                     cv2.rectangle(frame, top_left, bottom_right, (200, 0, 0), 2)
-        
-        
-
-
-        #self.nb_obstacles = len(self.detected_obstacles)
-
+    
         return frame
       
 
     def update_map_matrix(self,frame):
-        # Matrix representing if unit is obstacle, goal , robot or free
+        # Matrix representing the map. To be filled and used for path planning
         matrix = np.zeros((UNIT_NUMBER,UNIT_NUMBER))
 
         OBSTACLE_MARGIN = 0
@@ -221,39 +174,32 @@ class ArucoMarker:
                 for k in range(UNIT_NUMBER):
                     if top_left[0] - OBSTACLE_MARGIN < Map_camera[j][k][0] < bottom_right[0] + OBSTACLE_MARGIN and top_left[1] - OBSTACLE_MARGIN < Map_camera[j][k][1] < bottom_right[1] + OBSTACLE_MARGIN:
                         matrix[UNIT_NUMBER-k-1][j] = OBSTACLE
-                        #print("OBSTACLE: ",j,k)
                         frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 1, (0, 0, 255), -1)
-        #print("NUM OBSTACLES: ",self.nb_obstacles)
                         
-
-        # Set to 2 the unit where the goal is
         for j in range(UNIT_NUMBER):
             for k in range(UNIT_NUMBER):
                 if self.centroid_goal[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.centroid_goal[0] + PIXEL_MARGIN and self.centroid_goal[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.centroid_goal[1] + PIXEL_MARGIN:
-                    #matrix[j][k] = GOAL
-                    #print("GOAL: ",j,k)
                     frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (0, 0, 255), -1)
                     self.goal_idx = np.array([j, k])
                     break
 
-        # Set to 3 the unit where the robot is
+        
         if self.marker_id == 1:
             #create array with all the matrix units corresponding to robot
             ct = 0
             for j in range(UNIT_NUMBER):
                 for k in range(UNIT_NUMBER):
                     if self.pos[0] - PIXEL_MARGIN < Map_camera[j][k][0] < self.pos[0] + PIXEL_MARGIN and self.pos[1] - PIXEL_MARGIN < Map_camera[j][k][1] < self.pos[1] + PIXEL_MARGIN:
-                        #matrix[j][k] = ROBOT
+                        
                         ct = ct + 1
                         if ct == 1:
                             frame = cv2.circle(frame, (int(Map_camera[j][k][0]),int(Map_camera[j][k][1])), 3, (255, 0, 0), -1)
                             self.robot_idx = np.array([j, k])
-                        #print("ROBOT: ",j,k)
+                    
                         break
         
         
         self.Map_indices = matrix
-        #print("MAP: ",Map_indices)
 
 
     def camera_blocked(self, frame):
@@ -271,13 +217,14 @@ class ArucoMarker:
 
 
 def display_trajectory(frame, trajectory):
+
     for i in range(len(trajectory) - 1):
         #take coordinates from map_camera with trajectory indices
         x1 = Map_camera[trajectory[i][0]][trajectory[i][1]][0]
         y1 = Map_camera[trajectory[i][0]][trajectory[i][1]][1]
         x2 = Map_camera[trajectory[i+1][0]][trajectory[i+1][1]][0]
         y2 = Map_camera[trajectory[i+1][0]][trajectory[i+1][1]][1]
-        #print("x1: ",x1,"y1: ",y1,"x2: ",x2,"y2: ",y2)
+
         frame = cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), (0, 0, 255), 2)
     return frame
 

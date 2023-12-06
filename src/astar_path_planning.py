@@ -98,4 +98,7 @@ def get_path_rect(grid, start, goal):
         direction_changes_path = [(y, x) for x, y in direction_changes_path]
 
         #print("Path with direction changes:", direction_changes_path)
+        if len(path) != 0:
+            path.pop(0)
+
         return path
