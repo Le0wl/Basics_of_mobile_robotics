@@ -91,7 +91,6 @@ class ArucoMarker:
     
         return frame
     
-    
     def detect_red_objects(self,frame):
         # Convert the frame to HSV color space
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -170,7 +169,6 @@ class ArucoMarker:
                     cv2.rectangle(frame, top_left, bottom_right, (200, 0, 0), 2)
     
         return frame
-      
 
     def update_map_matrix(self,frame):
         # Matrix representing the map. To be filled and used for path planning
@@ -222,7 +220,6 @@ class ArucoMarker:
             
 
 
-
 def display_trajectory(frame, trajectory, position):
     if len(trajectory) != 0:
         x0 = Map_camera[trajectory[0][0]][trajectory[0][1]][0]
@@ -237,8 +234,6 @@ def display_trajectory(frame, trajectory, position):
 
         frame = cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), (0, 0, 255), 2)
     return frame
-
-
 
 def main_aruco(*markers):
     #cap = cv2.VideoCapture(0)  # Use 0 for default camera, change the value for other cameras
